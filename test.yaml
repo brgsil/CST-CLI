@@ -1,0 +1,21 @@
+---
+codelets:
+  - name: SensoryCodelet
+    group: Sensory
+    in: [MemoryOne]
+    out: [MemoryTwo]
+    broadcast: [MemoryThree]
+
+memories:
+  - name: MemoryOne
+    type: object
+    content: ~
+    group: SensorInput
+  - name: MemoryTwo
+    type: container
+    content: ~
+    group: Perception
+  - name: MemoryThree
+    type: object
+    content: ~
+    group: Global
