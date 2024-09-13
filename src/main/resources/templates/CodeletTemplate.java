@@ -2,11 +2,12 @@ package br.unicamp.cst.templates;
 
 public class {{codeletName}} extends Codelet {
 
-    {{inputDeclaration}}
+    {{memoriesDeclaration}}
 
     @Override
     public void accessMemoryObjects() {
         {{inputAccess}}
+        {{outputAccess}}
     }
 
     @Override

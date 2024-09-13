@@ -33,6 +33,10 @@ public class AgentConfig {
         this.memories = memories;
     }
 
+    public String generateCode() {
+        return "";
+    }
+
     @Override
     public String toString() {
         return "AgentConfig{" +
