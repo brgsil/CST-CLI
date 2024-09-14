@@ -32,13 +32,12 @@ public class CSTInit implements Callable<Integer> {
     }
 
     private void process(String configInfo) throws IOException {
-        File path = new File("./test/src/java/codelets");
-        path.mkdirs();
-
         Yaml yamlParser = new Yaml(new Constructor(AgentConfig.class, new LoaderOptions()));
         AgentConfig agentConfig = yamlParser.load(configInfo);
 
         for (CodeletConfig codelet : agentConfig.getCodelets()){
+            File path = new File("./test/src/java/codelets/" + codelet.getGroup().toLowerCase());
+            path.mkdirs();
             String codeletCode = codelet.generateCode();
             FileWriter writer = new FileWriter(path + "/SensoryCodelet.java");
             writer.write(codeletCode);
