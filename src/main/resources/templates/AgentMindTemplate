@@ -1,0 +1,26 @@
+import br.unicamp.cst.core.entities.Codelet;
+import br.unicamp.cst.core.entities.Memory;
+import br.unicamp.cst.core.entities.Mind;
+
+public class AgentMind extends Mind {
+
+    public AgentMind() {
+        super();
+
+        // Codelets Groups declarations{{codeletGroups}}
+
+        // Memory Groups declarations{{memoryGroups}}
+
+        // Memory Objects{{memoryObjects}}
+
+        // Memories initialization{{memoryInit}}
+
+        // Codelets initializations
+        {{codeletInit}}
+
+        // sets a time step for running the codelets to avoid heating too much your machine
+        for (Codelet c : this.getCodeRack().getAllCodelets())
+            c.setTimeStep(200);
+
+        start();
+    }

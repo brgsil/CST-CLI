@@ -4,6 +4,8 @@ import br.unicamp.cst.util.TemplatesBundle;
 
 import java.util.List;
 
+import static br.unicamp.cst.commands.CSTInit.TAB;
+
 public class CodeletConfig {
     private String name;
     private String group;
@@ -62,10 +64,14 @@ public class CodeletConfig {
         StringBuilder outMemoriesInit = new StringBuilder();
 
         for (String input : this.getIn()) {
-            declarations.append("\n    private Memory ")
+            declarations.append("\n")
+                    .append(TAB)
+                    .append("private Memory ")
                     .append(input)
                     .append(";");
-            inMemoriesInit.append("\n        ")
+            inMemoriesInit.append("\n")
+                    .append(TAB)
+                    .append(TAB)
                     .append(input)
                     .append(" = getInput(\"")
                     .append(input)
@@ -74,10 +80,14 @@ public class CodeletConfig {
         for (String output : this.getOut()) {
             // If memory was not already declare in the inputs do it now
             if (!this.getIn().contains(output))
-                declarations.append("\n    private Memory ")
+                declarations.append("\n")
+                        .append(TAB)
+                        .append("private Memory ")
                         .append(output)
                         .append(";");
-            outMemoriesInit.append("\n        ")
+            outMemoriesInit.append("\n")
+                    .append(TAB)
+                    .append(TAB)
                     .append(output)
                     .append(" = getOutput(\"")
                     .append(output)

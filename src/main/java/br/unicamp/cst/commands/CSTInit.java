@@ -21,7 +21,7 @@ import java.util.stream.Collectors;
 
 @Command(name = "init", description = "Initialize a new CST project")
 public class CSTInit implements Callable<Integer> {
-
+    public static String TAB = "    ";
     @Option(names= {"-f", "--file"}, description = "Config file for project creation")
     File config;
 
@@ -39,10 +39,12 @@ public class CSTInit implements Callable<Integer> {
             File path = new File("./test/src/java/codelets/" + codelet.getGroup().toLowerCase());
             path.mkdirs();
             String codeletCode = codelet.generateCode();
-            FileWriter writer = new FileWriter(path + "/SensoryCodelet.java");
+            FileWriter writer = new FileWriter(path + "/" + codelet.getName() + ".java");
             writer.write(codeletCode);
             writer.close();
         }
+
+        System.out.println(agentConfig.generateCode());
     }
 
 }

@@ -1,6 +1,13 @@
 package br.unicamp.cst.data;
 
+import br.unicamp.cst.commands.CSTInit;
+import br.unicamp.cst.util.TemplatesBundle;
+
+import java.util.Iterator;
 import java.util.List;
+import java.util.stream.Collectors;
+
+import static br.unicamp.cst.commands.CSTInit.TAB;
 
 public class AgentConfig {
 
@@ -34,7 +41,35 @@ public class AgentConfig {
     }
 
     public String generateCode() {
-        return "";
+        String templateInstance = TemplatesBundle.getInstance().getTemplate("AgentMindTemplate");
+
+        Iterator<String> uniqueCodeletsGroups = getCodelets().stream()
+                .map(CodeletConfig::getGroup).distinct().iterator();
+        StringBuilder codeletGroups = new StringBuilder();
+        while (uniqueCodeletsGroups.hasNext()){
+            codeletGroups.append("\n")
+                    .append(TAB)
+                    .append(TAB)
+                    .append("createCodeletGroup(\"")
+                    .append(uniqueCodeletsGroups.next())
+                    .append("\");");
+        }
+
+        Iterator<String> uniqueMemoryGroups = getMemories().stream()
+                .map(MemoryConfig::getGroup).distinct().iterator();
+        StringBuilder memoryGroups = new StringBuilder();
+        while (uniqueMemoryGroups .hasNext()){
+            memoryGroups .append("\n")
+                    .append(TAB)
+                    .append(TAB)
+                    .append("createMemoryGroup(\"")
+                    .append(uniqueMemoryGroups .next())
+                    .append("\");");
+        }
+
+        templateInstance = templateInstance.replace("{{codeletGroups}}", codeletGroups.toString());
+        templateInstance = templateInstance.replace("{{memoryGroups}}", memoryGroups.toString());
+        return templateInstance;
     }
 
     @Override
