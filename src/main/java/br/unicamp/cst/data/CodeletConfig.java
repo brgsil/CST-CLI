@@ -53,23 +53,40 @@ public class CodeletConfig {
 
     public String generateCode() {
         String templateInstance = TemplatesBundle.getInstance().getTemplate("CodeletTemplate");
+
+        templateInstance = templateInstance.replace("{{type}}", this.getGroup().toLowerCase());
         templateInstance = templateInstance.replace("{{codeletName}}", this.getName());
-        String declarations = "";
-        String inMemoriesInit = "";
-        String outMemoriesInit = "";
+
+        StringBuilder declarations = new StringBuilder();
+        StringBuilder inMemoriesInit = new StringBuilder();
+        StringBuilder outMemoriesInit = new StringBuilder();
+
         for (String input : this.getIn()) {
-            declarations += "\n    private Memory " + input + ";";
-            inMemoriesInit += "\n        " + input + " = getInput(\"" + input + "\");";
+            declarations.append("\n    private Memory ")
+                    .append(input)
+                    .append(";");
+            inMemoriesInit.append("\n        ")
+                    .append(input)
+                    .append(" = getInput(\"")
+                    .append(input)
+                    .append("\");");
         }
         for (String output : this.getOut()) {
             // If memory was not already declare in the inputs do it now
             if (!this.getIn().contains(output))
-                declarations += "\n    private Memory " + output + ";";
-            outMemoriesInit += "\n        " + output + " = getOutput(\"" + output + "\");";
+                declarations.append("\n    private Memory ")
+                        .append(output)
+                        .append(";");
+            outMemoriesInit.append("\n        ")
+                    .append(output)
+                    .append(" = getOutput(\"")
+                    .append(output)
+                    .append("\");");
         }
-        templateInstance = templateInstance.replace("{{memoriesDeclaration}}", declarations);
-        templateInstance = templateInstance.replace("{{inputAccess}}", inMemoriesInit);
-        templateInstance = templateInstance.replace("{{outputAccess}}", outMemoriesInit);
+        templateInstance = templateInstance.replace("{{memoriesDeclaration}}", declarations.toString());
+        templateInstance = templateInstance.replace("{{inputAccess}}", inMemoriesInit.toString());
+        templateInstance = templateInstance.replace("{{outputAccess}}", outMemoriesInit.toString());
+
         return templateInstance;
     }
 
