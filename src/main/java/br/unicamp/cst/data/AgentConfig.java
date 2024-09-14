@@ -67,8 +67,28 @@ public class AgentConfig {
                     .append("\");");
         }
 
+        StringBuilder memoryDeclarations = new StringBuilder();
+        StringBuilder memoryInit = new StringBuilder();
+        for (MemoryConfig memory : this.getMemories()){
+            // Declare memory variable
+            memoryDeclarations.append("\n")
+                    .append(TAB)
+                    .append(TAB)
+                    .append("public Memory ")
+                    .append(memory.getName())
+                    .append(";");
+            // Initialize memory object
+            memoryInit.append("\n")
+                    .append(TAB)
+                    .append(TAB)
+                    .append(memory.getName());
+
+        }
+
+
         templateInstance = templateInstance.replace("{{codeletGroups}}", codeletGroups.toString());
         templateInstance = templateInstance.replace("{{memoryGroups}}", memoryGroups.toString());
+        templateInstance = templateInstance.replace("{{memoryObjects}}", memoryDeclarations.toString());
         return templateInstance;
     }
 

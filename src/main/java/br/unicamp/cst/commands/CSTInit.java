@@ -22,6 +22,8 @@ import java.util.stream.Collectors;
 @Command(name = "init", description = "Initialize a new CST project")
 public class CSTInit implements Callable<Integer> {
     public static String TAB = "    ";
+    public static String PARSER_ERROR = "Error parsing config file";
+
     @Option(names= {"-f", "--file"}, description = "Config file for project creation")
     File config;
 

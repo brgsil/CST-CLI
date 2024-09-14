@@ -1,6 +1,13 @@
 package br.unicamp.cst.data;
 
+import br.unicamp.cst.util.FileParsingException;
+import picocli.CommandLine;
+
+import static br.unicamp.cst.commands.CSTInit.PARSER_ERROR;
+
 public class MemoryConfig {
+    private static final String MEMORY_OBJECT_TYPE = "object";
+    private static final String MEMORY_CONTAINER_TYPE = "container";
     private String name;
     private String type;
     private String content;
@@ -19,7 +26,19 @@ public class MemoryConfig {
     }
 
     public void setType(String type) {
-        this.type = type;
+        if (type != null) {
+            if (MEMORY_OBJECT_TYPE.equals(type.toLowerCase()) || MEMORY_CONTAINER_TYPE.equals(type.toLowerCase())) {
+                this.type = type;
+            } else {
+                System.out.println(PARSER_ERROR);
+                System.out.println("MEMORY[" + this.getName() + "]: Memory type should be 'object' or 'container'");
+                System.exit(1);
+            }
+        } else {
+            System.out.println(PARSER_ERROR);
+            System.out.println("MEMORY[" + this.getName() + "]: Memory type must be specified!");
+            System.exit(1);
+        }
     }
 
     public String getContent() {
