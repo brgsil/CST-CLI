@@ -1,13 +1,10 @@
 package br.unicamp.cst.data;
 
-import br.unicamp.cst.util.FileParsingException;
-import picocli.CommandLine;
-
 import static br.unicamp.cst.commands.CSTInit.PARSER_ERROR;
 
 public class MemoryConfig {
-    private static final String MEMORY_OBJECT_TYPE = "object";
-    private static final String MEMORY_CONTAINER_TYPE = "container";
+    public static final String MEMORY_OBJECT_TYPE = "object";
+    public static final String MEMORY_CONTAINER_TYPE = "container";
     private String name;
     private String type;
     private String content;

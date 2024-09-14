@@ -46,7 +46,12 @@ public class CSTInit implements Callable<Integer> {
             writer.close();
         }
 
-        System.out.println(agentConfig.generateCode());
+        File path = new File("./test/src/java/");
+        path.mkdirs();
+        String agentMindCode = agentConfig.generateCode();
+        FileWriter writer = new FileWriter(path + "/AgentMind.java");
+        writer.write(agentMindCode);
+        writer.close();
     }
 
 }

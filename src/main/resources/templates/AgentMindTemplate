@@ -1,6 +1,7 @@
 import br.unicamp.cst.core.entities.Codelet;
 import br.unicamp.cst.core.entities.Memory;
 import br.unicamp.cst.core.entities.Mind;
+{{codeletsImport}}
 
 public class AgentMind extends Mind {
 
@@ -15,10 +16,9 @@ public class AgentMind extends Mind {
 
         // Memories initialization{{memoryInit}}
 
-        // Codelets initializations
-        {{codeletInit}}
+        // Codelets initializations{{codeletInit}}
 
-        // sets a time step for running the codelets to avoid heating too much your machine
+        // Sets a time step for running the codelets to avoid heating too much your machine
         for (Codelet c : this.getCodeRack().getAllCodelets())
             c.setTimeStep(200);
 
