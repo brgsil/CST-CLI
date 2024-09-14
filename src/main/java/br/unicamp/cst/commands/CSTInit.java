@@ -34,17 +34,16 @@ public class CSTInit implements Callable<Integer> {
     private void process(String configInfo) throws IOException {
         File path = new File("./test/src/java/codelets");
         path.mkdirs();
-        FileWriter writer = new FileWriter(path + "/SensoryCodelet.java");
 
         Yaml yamlParser = new Yaml(new Constructor(AgentConfig.class, new LoaderOptions()));
         AgentConfig agentConfig = yamlParser.load(configInfo);
 
         for (CodeletConfig codelet : agentConfig.getCodelets()){
-            String code = codelet.generateCode();
-            System.out.println(code);
-            writer.write(code);
+            String codeletCode = codelet.generateCode();
+            FileWriter writer = new FileWriter(path + "/SensoryCodelet.java");
+            writer.write(codeletCode);
+            writer.close();
         }
-        writer.close();
     }
 
 }

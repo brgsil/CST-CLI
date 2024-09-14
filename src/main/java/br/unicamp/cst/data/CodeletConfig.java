@@ -1,5 +1,7 @@
 package br.unicamp.cst.data;
 
+import br.unicamp.cst.util.TemplatesBundle;
+
 import java.util.List;
 
 public class CodeletConfig {
@@ -8,27 +10,6 @@ public class CodeletConfig {
     private List<String> in;
     private List<String> out;
     private List<String> broadcast;
-    String codeTemplate = "package br.unicamp.cst.templates;\n" +
-            "\n" +
-            "public class {{codeletName}} extends Codelet {\n" +
-            "    {{memoriesDeclaration}}\n" +
-            "\n" +
-            "    @Override\n" +
-            "    public void accessMemoryObjects() {" +
-            "        {{inputAccess}}" +
-            "        {{outputAccess}}\n" +
-            "    }\n" +
-            "\n" +
-            "    @Override\n" +
-            "    public void calculateActivation() {\n" +
-            "\n" +
-            "    }\n" +
-            "\n" +
-            "    @Override\n" +
-            "    public void proc() {\n" +
-            "\n" +
-            "    }\n" +
-            "}";
 
     public String getName() {
         return name;
@@ -71,7 +52,7 @@ public class CodeletConfig {
     }
 
     public String generateCode() {
-        String templateInstance = new String(codeTemplate);
+        String templateInstance = TemplatesBundle.getInstance().getTemplate("CodeletTemplate");
         templateInstance = templateInstance.replace("{{codeletName}}", this.getName());
         String declarations = "";
         String inMemoriesInit = "";
