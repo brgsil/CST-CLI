@@ -1,10 +1,12 @@
 plugins {
     id 'java'
     id 'application'
+    id 'org.beryx.jlink' version '3.0.1'
+    id 'org.openjfx.javafxplugin' version '0.0.10'
 }
 
 group = 'br.unicamp.cst'
-version = '1.0-SNAPSHOT'
+version = '0.1'
 
 repositories {
     mavenCentral()
@@ -17,7 +19,6 @@ dependencies {
     implementation 'info.picocli:picocli:4.7.6'
     annotationProcessor 'info.picocli:picocli-codegen:4.7.6'
     implementation 'org.yaml:snakeyaml:2.2'
-    implementation 'com.github.CST-Group:cst:1.4.1'
 }
 
 compileJava {
@@ -30,4 +31,40 @@ test {
 
 application {
     mainClass = 'br.unicamp.cst.Main'
+    mainModule = 'cscli'
+}
+
+/*jar {
+    manifest {
+        attributes "Main-Class": 'br.unicamp.cst.Main'
+    }
+    from {
+        configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) }
+    }
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+}
+ */
+
+javafx {
+    version = 21
+    modules = [
+            'javafx.controls',
+            'javafx.base',
+            'javafx.graphics'
+    ]
+}
+
+jlink {
+    options = ['--strip-debug', '--compress', '2', '--no-header-files', '--no-man-pages']
+    mergedModule {
+        requires 'java.base'
+        requires 'java.desktop'
+        requires 'java.logging'
+    }
+    jpackage {
+        installerType = 'deb'
+        outputDir = 'cscli-package'
+        imageName = 'cscli'
+    }
+    //launcher {jvmArgs = ['--add-opens cscli/br.unicamp.cst.commands=ALL-UNNAMED']}
 }
