@@ -5,6 +5,11 @@ codelets:
     in: [MemoryOne]
     out: [MemoryTwo]
     broadcast: [MemoryThree]
+  - name: SensoryDiffCodelet
+    group: Sensory
+    in: [MemoryOne]
+    out: [MemoryTwo]
+    broadcast: [MemoryThree]
 
 memories:
   - name: MemoryOne
