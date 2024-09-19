@@ -1,10 +1,10 @@
-module cscli {
+module br.unicamp.cscli {
     requires info.picocli;
     requires org.yaml.snakeyaml;
     requires java.logging;
 
-    exports br.unicamp.cst;
-    opens br.unicamp.cst to info.picocli;
-    opens br.unicamp.cst.commands to info.picocli;
-    opens br.unicamp.cst.data to org.yaml.snakeyaml;
+    exports br.unicamp.cscli;
+    opens br.unicamp.cscli to info.picocli;
+    opens br.unicamp.cscli.commands to info.picocli;
+    opens br.unicamp.cscli.data to org.yaml.snakeyaml;
 }

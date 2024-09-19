@@ -1,10 +1,10 @@
-package br.unicamp.cst.data;
+package br.unicamp.cscli.data;
 
-import br.unicamp.cst.util.TemplatesBundle;
+import br.unicamp.cscli.util.TemplatesBundle;
 
 import java.util.List;
 
-import static br.unicamp.cst.commands.CSTInit.TAB;
+import static br.unicamp.cscli.commands.CSTInit.TAB;
 
 public class CodeletConfig {
     private String name;

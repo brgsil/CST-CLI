@@ -1,6 +1,6 @@
-package br.unicamp.cst;
+package br.unicamp.cscli;
 
-import br.unicamp.cst.commands.CSTInit;
+import br.unicamp.cscli.commands.CSTInit;
 import picocli.CommandLine.Command;
 import picocli.CommandLine;
 

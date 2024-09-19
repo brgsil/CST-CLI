@@ -1,6 +1,6 @@
-package br.unicamp.cst.data;
+package br.unicamp.cscli.data;
 
-import static br.unicamp.cst.commands.CSTInit.PARSER_ERROR;
+import static br.unicamp.cscli.commands.CSTInit.PARSER_ERROR;
 
 public class MemoryConfig {
     public static final String MEMORY_OBJECT_TYPE = "object";

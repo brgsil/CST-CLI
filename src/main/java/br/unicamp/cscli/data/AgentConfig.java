@@ -1,13 +1,13 @@
-package br.unicamp.cst.data;
+package br.unicamp.cscli.data;
 
-import br.unicamp.cst.util.TemplatesBundle;
+import br.unicamp.cscli.util.TemplatesBundle;
 
 import java.util.Iterator;
 import java.util.List;
 
-import static br.unicamp.cst.commands.CSTInit.TAB;
-import static br.unicamp.cst.data.MemoryConfig.MEMORY_CONTAINER_TYPE;
-import static br.unicamp.cst.data.MemoryConfig.MEMORY_OBJECT_TYPE;
+import static br.unicamp.cscli.commands.CSTInit.TAB;
+import static br.unicamp.cscli.data.MemoryConfig.MEMORY_CONTAINER_TYPE;
+import static br.unicamp.cscli.data.MemoryConfig.MEMORY_OBJECT_TYPE;
 
 public class AgentConfig {
 
