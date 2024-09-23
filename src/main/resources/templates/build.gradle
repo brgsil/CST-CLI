@@ -1,0 +1,23 @@
+plugins {
+    // Apply the application plugin to add support for building a CLI application in Java.
+    id 'application'
+}
+
+repositories {
+    // Use Maven Central for resolving dependencies.
+    mavenCentral()
+    maven { url 'https://jitpack.io' }
+}
+
+dependencies {
+    // Use JUnit test framework.
+    testImplementation 'junit:junit:4.13.2'
+
+    // This dependency is used by the application.
+    implementation 'com.github.CST-Group:cst:{{cstVersion}}'
+}
+
+application {
+    // Define the main class for the application.
+    mainClass = '{{mainClass}}'
+}

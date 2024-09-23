@@ -18,6 +18,9 @@ public class TemplatesBundle {
         // getResourceAsStream needs to receive a constant so GraalVM can process it
         loadTemplate("CodeletTemplate", TemplatesBundle.class.getResourceAsStream("/templates/CodeletTemplate"));
         loadTemplate("AgentMindTemplate", TemplatesBundle.class.getResourceAsStream("/templates/AgentMindTemplate"));
+        loadTemplate("settings", TemplatesBundle.class.getResourceAsStream("/templates/settings.gradle"));
+        loadTemplate("build", TemplatesBundle.class.getResourceAsStream("/templates/build.gradle"));
+        loadTemplate("MainTemplate", TemplatesBundle.class.getResourceAsStream("/templates/MainTemplate"));
     }
 
     public static TemplatesBundle getInstance(){

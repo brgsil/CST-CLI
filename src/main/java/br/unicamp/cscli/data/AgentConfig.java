@@ -2,6 +2,7 @@ package br.unicamp.cscli.data;
 
 import br.unicamp.cscli.util.TemplatesBundle;
 
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
@@ -13,8 +14,8 @@ public class AgentConfig {
 
     private String projectName;
 
-    private List<CodeletConfig> codelets;
-    private List<MemoryConfig> memories;
+    private List<CodeletConfig> codelets = new ArrayList<>();
+    private List<MemoryConfig> memories = new ArrayList<>();
 
     public String getProjectName() {
         return projectName;
@@ -40,17 +41,19 @@ public class AgentConfig {
         this.memories = memories;
     }
 
-    public String generateCode() {
+    public String generateCode(String rootPackage) {
         String templateInstance = TemplatesBundle.getInstance().getTemplate("AgentMindTemplate");
 
         // Codelets class import
         StringBuilder codeletsImport = new StringBuilder();
         for (CodeletConfig codelet : this.getCodelets()) {
-           codeletsImport.append("\nimport codelets.")
-                   .append(codelet.getGroup().toLowerCase())
-                   .append(".")
-                   .append(codelet.getName())
-                   .append(";");
+           codeletsImport.append("\nimport ")
+                        .append(rootPackage)
+                        .append(".codelets.")
+                        .append(codelet.getGroup().toLowerCase())
+                        .append(".")
+                        .append(codelet.getName())
+                        .append(";");
         }
 
         Iterator<String> uniqueCodeletsGroups = getCodelets().stream()
@@ -84,7 +87,7 @@ public class AgentConfig {
             memoryDeclarations.append("\n")
                     .append(TAB)
                     .append(TAB)
-                    .append("public Memory ")
+                    .append("Memory ")
                     .append(getVarName(memory.getName()))
                     .append(";");
             // Initialize memory object
@@ -157,6 +160,7 @@ public class AgentConfig {
             }
         }
 
+        templateInstance = templateInstance.replace("{{rootPackage}}", rootPackage);
         templateInstance = templateInstance.replace("{{codeletsImport}}", codeletsImport.toString());
         templateInstance = templateInstance.replace("{{codeletGroups}}", codeletGroups.toString());
         templateInstance = templateInstance.replace("{{memoryGroups}}", memoryGroups.toString());

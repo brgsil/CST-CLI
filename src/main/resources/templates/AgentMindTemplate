@@ -1,3 +1,5 @@
+package {{rootPackage}};
+
 import br.unicamp.cst.core.entities.Codelet;
 import br.unicamp.cst.core.entities.Memory;
 import br.unicamp.cst.core.entities.Mind;
@@ -24,3 +26,4 @@ public class AgentMind extends Mind {
 
         start();
     }
+}

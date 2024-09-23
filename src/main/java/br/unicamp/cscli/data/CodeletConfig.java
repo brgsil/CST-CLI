@@ -53,9 +53,10 @@ public class CodeletConfig {
         this.broadcast = broadcast;
     }
 
-    public String generateCode() {
+    public String generateCode(String rootPackage) {
         String templateInstance = TemplatesBundle.getInstance().getTemplate("CodeletTemplate");
 
+        templateInstance = templateInstance.replace("{{rootPackage}}", rootPackage);
         templateInstance = templateInstance.replace("{{type}}", this.getGroup().toLowerCase());
         templateInstance = templateInstance.replace("{{codeletName}}", this.getName());
 

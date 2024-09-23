@@ -5,7 +5,7 @@ plugins {
     id 'org.openjfx.javafxplugin' version '0.0.10'
 }
 
-group = 'br.unicamp.cst'
+group = 'br.unicamp.cscli'
 version = '0.1'
 
 repositories {
@@ -30,8 +30,8 @@ test {
 }
 
 application {
-    mainClass = 'br.unicamp.cst.Main'
-    mainModule = 'cscli'
+    mainModule = 'br.unicamp.cscli'
+    mainClass = 'br.unicamp.cscli.Main'
 }
 
 /*jar {

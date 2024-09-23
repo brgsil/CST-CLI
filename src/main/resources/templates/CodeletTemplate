@@ -1,4 +1,4 @@
-package codelets.{{type}};
+package {{rootPackage}}.codelets.{{type}};
 
 import br.unicamp.cst.core.entities.Codelet;
 import br.unicamp.cst.core.entities.Memory;
