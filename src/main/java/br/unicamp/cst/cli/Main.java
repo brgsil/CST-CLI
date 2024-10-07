@@ -1,13 +1,13 @@
-package br.unicamp.cscli;
+package br.unicamp.cst.cli;
 
-import br.unicamp.cscli.commands.CSTInit;
+import br.unicamp.cst.cli.commands.CSTInit;
 import picocli.CommandLine.Command;
 import picocli.CommandLine;
 
-@Command(name = "cscli",
+@Command(name = "cst",
         synopsisSubcommandLabel = "COMMAND",
         mixinStandardHelpOptions = true,
-        version = "cscli 0.1",
+        version = "cst_cli 0.1",
         subcommands = {
             CSTInit.class,
         })

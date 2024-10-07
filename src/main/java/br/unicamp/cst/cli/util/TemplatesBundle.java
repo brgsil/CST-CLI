@@ -1,4 +1,4 @@
-package br.unicamp.cscli.util;
+package br.unicamp.cst.cli.util;
 
 import java.io.BufferedReader;
 import java.io.IOException;

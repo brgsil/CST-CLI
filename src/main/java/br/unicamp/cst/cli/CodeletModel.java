@@ -1,4 +1,4 @@
-package br.unicamp.cscli;
+package br.unicamp.cst.cli;
 
 public class CodeletModel {
 }

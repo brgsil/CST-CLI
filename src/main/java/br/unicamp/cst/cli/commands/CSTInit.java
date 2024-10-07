@@ -1,9 +1,10 @@
-package br.unicamp.cscli.commands;
+package br.unicamp.cst.cli.commands;
 
-import br.unicamp.cscli.data.AgentConfig;
-import br.unicamp.cscli.data.CodeletConfig;
+import br.unicamp.cst.cli.data.AgentConfig;
+import br.unicamp.cst.cli.data.CodeletConfig;
 
-import br.unicamp.cscli.util.TemplatesBundle;
+import br.unicamp.cst.cli.util.TemplatesBundle;
+import picocli.CommandLine;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;
 
@@ -13,6 +14,7 @@ import org.yaml.snakeyaml.constructor.Constructor;
 
 import java.io.*;
 import java.nio.file.Files;
+import java.util.Arrays;
 import java.util.Scanner;
 import java.util.concurrent.Callable;
 import java.util.stream.Collectors;
@@ -28,26 +30,47 @@ public class CSTInit implements Callable<Integer> {
     @Option(names = {"--package"}, description = "Package name for the project")
     String packageName;
 
-    @Option(names= {"-f", "--file"}, description = "Config file for project creation")
+    @Option(names = {"-f", "--file"}, description = "Config file for project creation")
     File config;
 
     @Option(names = {"--cst-version"}, defaultValue = "1.4.1", description = "Select a CST release version to use")
     String cstVersion;
 
+    @Option(names = {"--overwrite"}, description = "Allows to overwrite files in the directory")
+    Boolean overwrite;
+
     @Override
     public Integer call() throws Exception {
-        getRequiredParams();
-        createDirs();
-        initGradle();
-        if (config != null)
-            process(Files.lines(config.toPath()).collect(Collectors.joining("\n")));
-        else
-            process("");
+        if (checkCurrDir()) {
+            getRequiredParams();
+            createDirs();
+            initGradle();
+            if (config != null)
+                process(Files.lines(config.toPath()).collect(Collectors.joining("\n")));
+            else
+                process("");
+        }
         return 0;
     }
 
+    private boolean checkCurrDir() {
+        File[] existingFiles = new File(System.getProperty("user.dir")).listFiles();
+        if (!(existingFiles.length == 0)){
+            String warning = CommandLine.Help.Ansi.AUTO.string("@|bold,red WARNING:|@ @|red This directory is not empty. If you proceed some files may be overwritten.|@\n\n @|red Would you like to continue with project initialization? [y/|@@|red,bold N|@@|red ]: |@");
+            System.out.print(warning);
+            Scanner input = new Scanner(System.in);
+            String inputName = input.nextLine();
+            String ans = "n";
+            if (!inputName.isBlank())
+                ans = inputName.toLowerCase();
+            if (ans.equals("n"))
+                return false;
+        }
+        return true;
+    }
+
     private void getRequiredParams() {
-        if (projectName == null){
+        if (projectName == null) {
             String osName = System.getProperty("os.name").toLowerCase();
             String[] splitPath = new String[0];
             if (osName.contains("win"))
@@ -75,7 +98,7 @@ public class CSTInit implements Callable<Integer> {
 
     private void createDirs() throws IOException {
         // Main java package dir
-        File path = new File("./src/main/java/"+ packageName.replace(".", "/")+"/codelets");
+        File path = new File("./src/main/java/" + packageName.replace(".", "/") + "/codelets");
         path.mkdirs();
         // Resources dir
         path = new File("./src/main/resources");
@@ -84,7 +107,7 @@ public class CSTInit implements Callable<Integer> {
         path = new File("./src/test/java");
         path.mkdirs();
         // Main.java
-        path = new File("./src/main/java/"+ packageName.replace(".", "/"));
+        path = new File("./src/main/java/" + packageName.replace(".", "/"));
         path.mkdirs();
         String mainTemplate = TemplatesBundle.getInstance().getTemplate("MainTemplate");
         mainTemplate = mainTemplate.replace("{{rootPackage}}", packageName);
@@ -128,14 +151,14 @@ public class CSTInit implements Callable<Integer> {
         OutputStream streamOut = new FileOutputStream("./gradle/wrapper/gradle-wrapper.jar");
         byte[] buffer = new byte[4096];
         int bytes;
-        while ((bytes = gradleJar.read(buffer)) > 0){
+        while ((bytes = gradleJar.read(buffer)) > 0) {
             streamOut.write(buffer, 0, bytes);
         }
 
         InputStream gradleProperties = CSTInit.class.getResourceAsStream("/gradle/gradle/wrapper/gradle-wrapper.properties");
         streamOut = new FileOutputStream("./gradle/wrapper/gradle-wrapper.properties");
         buffer = new byte[4096];
-        while ((bytes = gradleProperties.read(buffer)) > 0){
+        while ((bytes = gradleProperties.read(buffer)) > 0) {
             streamOut.write(buffer, 0, bytes);
         }
 
@@ -157,15 +180,15 @@ public class CSTInit implements Callable<Integer> {
 
     private void process(String configInfo) throws IOException {
         AgentConfig agentConfig;
-        if (configInfo.isBlank()){
+        if (configInfo.isBlank()) {
             agentConfig = new AgentConfig();
         } else {
             Yaml yamlParser = new Yaml(new Constructor(AgentConfig.class, new LoaderOptions()));
             agentConfig = yamlParser.load(configInfo);
         }
 
-        for (CodeletConfig codelet : agentConfig.getCodelets()){
-            File path = new File("./src/main/java/"+ packageName.replace(".", "/")+"/codelets/" + codelet.getGroup().toLowerCase());
+        for (CodeletConfig codelet : agentConfig.getCodelets()) {
+            File path = new File("./src/main/java/" + packageName.replace(".", "/") + "/codelets/" + codelet.getGroup().toLowerCase());
             path.mkdirs();
             String codeletCode = codelet.generateCode(packageName);
             FileWriter writer = new FileWriter(path + "/" + codelet.getName() + ".java");
