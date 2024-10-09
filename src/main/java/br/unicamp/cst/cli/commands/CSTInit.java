@@ -14,7 +14,6 @@ import org.yaml.snakeyaml.constructor.Constructor;
 
 import java.io.*;
 import java.nio.file.Files;
-import java.util.Arrays;
 import java.util.Scanner;
 import java.util.concurrent.Callable;
 import java.util.stream.Collectors;
@@ -39,16 +38,16 @@ public class CSTInit implements Callable<Integer> {
     @Option(names = {"--overwrite"}, description = "Allows to overwrite files in the directory")
     Boolean overwrite;
 
+    private AgentConfig agentConfig;
+
     @Override
     public Integer call() throws Exception {
         if (checkCurrDir()) {
+            getAgentConfig();
             getRequiredParams();
             createDirs();
             initGradle();
-            if (config != null)
-                process(Files.lines(config.toPath()).collect(Collectors.joining("\n")));
-            else
-                process("");
+            generateCode();
         }
         return 0;
     }
@@ -71,28 +70,40 @@ public class CSTInit implements Callable<Integer> {
 
     private void getRequiredParams() {
         if (projectName == null) {
-            String osName = System.getProperty("os.name").toLowerCase();
-            String[] splitPath = new String[0];
-            if (osName.contains("win"))
-                splitPath = System.getProperty("user.dir").split("\\");
-            if (osName.contains("nix") || osName.contains("nux") || osName.contains("aix"))
-                splitPath = System.getProperty("user.dir").split("/");
+            if (agentConfig.getProjectName() == null) {
+                String osName = System.getProperty("os.name").toLowerCase();
+                String[] splitPath = new String[0];
+                if (osName.contains("win"))
+                    splitPath = System.getProperty("user.dir").split("\\");
+                if (osName.contains("nix") || osName.contains("nux") || osName.contains("aix"))
+                    splitPath = System.getProperty("user.dir").split("/");
 
-            projectName = splitPath[splitPath.length - 1];
-            System.out.print("Enter project name (default: " + projectName + ") : ");
-            Scanner input = new Scanner(System.in);
-            String inputName = input.nextLine();
-            if (!inputName.isBlank())
-                projectName = inputName;
+                projectName = splitPath[splitPath.length - 1];
+                System.out.print("Enter project name (default: " + projectName + ") : ");
+                Scanner input = new Scanner(System.in);
+                String inputName = input.nextLine();
+                if (!inputName.isBlank())
+                    projectName = inputName;
+
+                agentConfig.setProjectName(projectName);
+            } else {
+                projectName = agentConfig.getProjectName();
+            }
         }
 
         if (packageName == null) {
-            packageName = projectName.toLowerCase();
-            System.out.print("Enter package name (default: " + packageName + "): ");
-            Scanner input = new Scanner(System.in);
-            String inputName = input.nextLine();
-            if (!inputName.isBlank())
-                packageName = inputName;
+            if (agentConfig.getPackageName() == null) {
+                packageName = projectName.toLowerCase();
+                System.out.print("Enter package name (default: " + packageName + "): ");
+                Scanner input = new Scanner(System.in);
+                String inputName = input.nextLine();
+                if (!inputName.isBlank())
+                    packageName = inputName;
+
+                agentConfig.setPackageName(packageName);
+            } else {
+                packageName = agentConfig.getPackageName();
+            }
         }
     }
 
@@ -178,15 +189,7 @@ public class CSTInit implements Callable<Integer> {
         writer.close();
     }
 
-    private void process(String configInfo) throws IOException {
-        AgentConfig agentConfig;
-        if (configInfo.isBlank()) {
-            agentConfig = new AgentConfig();
-        } else {
-            Yaml yamlParser = new Yaml(new Constructor(AgentConfig.class, new LoaderOptions()));
-            agentConfig = yamlParser.load(configInfo);
-        }
-
+    private void generateCode() throws IOException {
         for (CodeletConfig codelet : agentConfig.getCodelets()) {
             File path = new File("./src/main/java/" + packageName.replace(".", "/") + "/codelets/" + codelet.getGroup().toLowerCase());
             path.mkdirs();
@@ -198,10 +201,22 @@ public class CSTInit implements Callable<Integer> {
 
         File path = new File("./src/main/java/" + packageName.replace(".", "/"));
         path.mkdirs();
-        String agentMindCode = agentConfig.generateCode(packageName);
+        String agentMindCode = agentConfig.generateCode();
         FileWriter writer = new FileWriter(path + "/AgentMind.java");
         writer.write(agentMindCode);
         writer.close();
+    }
+
+    private void getAgentConfig() throws IOException {
+        String configInfo = "";
+        if (config != null)
+            configInfo = Files.lines(config.toPath()).collect(Collectors.joining("\n"));
+        if (configInfo.isBlank()) {
+            agentConfig = new AgentConfig();
+        } else {
+            Yaml yamlParser = new Yaml(new Constructor(AgentConfig.class, new LoaderOptions()));
+            agentConfig = yamlParser.load(configInfo);
+        }
     }
 
 }

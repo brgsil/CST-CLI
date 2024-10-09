@@ -13,6 +13,7 @@ import static br.unicamp.cst.cli.data.MemoryConfig.MEMORY_OBJECT_TYPE;
 public class AgentConfig {
 
     private String projectName;
+    private String packageName;
 
     private List<CodeletConfig> codelets = new ArrayList<>();
     private List<MemoryConfig> memories = new ArrayList<>();
@@ -23,6 +24,14 @@ public class AgentConfig {
 
     public void setProjectName(String projectName) {
         this.projectName = projectName;
+    }
+
+    public String getPackageName() {
+        return packageName;
+    }
+
+    public void setPackageName(String packageName) {
+        this.packageName = packageName;
     }
 
     public List<CodeletConfig> getCodelets() {
@@ -41,14 +50,14 @@ public class AgentConfig {
         this.memories = memories;
     }
 
-    public String generateCode(String rootPackage) {
+    public String generateCode() {
         String templateInstance = TemplatesBundle.getInstance().getTemplate("AgentMindTemplate");
 
         // Codelets class import
         StringBuilder codeletsImport = new StringBuilder();
         for (CodeletConfig codelet : this.getCodelets()) {
            codeletsImport.append("\nimport ")
-                        .append(rootPackage)
+                        .append(packageName)
                         .append(".codelets.")
                         .append(codelet.getGroup().toLowerCase())
                         .append(".")
@@ -160,7 +169,7 @@ public class AgentConfig {
             }
         }
 
-        templateInstance = templateInstance.replace("{{rootPackage}}", rootPackage);
+        templateInstance = templateInstance.replace("{{rootPackage}}", packageName);
         templateInstance = templateInstance.replace("{{codeletsImport}}", codeletsImport.toString());
         templateInstance = templateInstance.replace("{{codeletGroups}}", codeletGroups.toString());
         templateInstance = templateInstance.replace("{{memoryGroups}}", memoryGroups.toString());
