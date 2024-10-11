@@ -192,7 +192,7 @@ public class AgentConfig {
                 .append(");");
     }
 
-    private String getVarName(String name) {
+    public static String getVarName(String name) {
         char[] split = name.toCharArray();
         split[0] = Character.toLowerCase(split[0]);
         return new String(split);

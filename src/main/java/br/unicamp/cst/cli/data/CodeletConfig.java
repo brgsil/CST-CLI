@@ -2,6 +2,7 @@ package br.unicamp.cst.cli.data;
 
 import br.unicamp.cst.cli.util.TemplatesBundle;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import static br.unicamp.cst.cli.commands.CSTInit.TAB;
@@ -9,9 +10,9 @@ import static br.unicamp.cst.cli.commands.CSTInit.TAB;
 public class CodeletConfig {
     private String name;
     private String group;
-    private List<String> in;
-    private List<String> out;
-    private List<String> broadcast;
+    private List<String> in = new ArrayList<>();
+    private List<String> out = new ArrayList<>();
+    private List<String> broadcast = new ArrayList<>();
 
     public String getName() {
         return name;
@@ -37,6 +38,10 @@ public class CodeletConfig {
         this.in = in;
     }
 
+    public void addIn(String in) {
+        this.in.add(in);
+    }
+
     public List<String> getOut() {
         return out;
     }
@@ -45,12 +50,21 @@ public class CodeletConfig {
         this.out = out;
     }
 
+    public void addOut(String out) {
+        this.out.add(out);
+    }
+
+
     public List<String> getBroadcast() {
         return broadcast;
     }
 
     public void setBroadcast(List<String> broadcast) {
         this.broadcast = broadcast;
+    }
+
+    public void addBroadcast(String mem) {
+        this.broadcast.add(mem);
     }
 
     public String generateCode(String rootPackage) {
