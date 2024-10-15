@@ -2,11 +2,15 @@ package br.unicamp.cst.cli.commands;
 
 import br.unicamp.cst.cli.data.AgentConfig;
 import br.unicamp.cst.cli.data.CodeletConfig;
-
+import br.unicamp.cst.cli.data.ConfigParser;
 import br.unicamp.cst.cli.util.TemplatesBundle;
+
 import picocli.CommandLine;
+import picocli.CommandLine.Spec;
+import picocli.CommandLine.Model.CommandSpec;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;
+import picocli.CommandLine.Help.Ansi;
 
 import org.yaml.snakeyaml.Yaml;
 import org.yaml.snakeyaml.LoaderOptions;
@@ -14,6 +18,9 @@ import org.yaml.snakeyaml.constructor.Constructor;
 
 import java.io.*;
 import java.nio.file.Files;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Scanner;
 import java.util.concurrent.Callable;
 import java.util.stream.Collectors;
@@ -35,40 +42,54 @@ public class CSTInit implements Callable<Integer> {
     @Option(names = {"--cst-version"}, defaultValue = "1.4.1", description = "Select a CST release version to use")
     String cstVersion;
 
-    @Option(names = {"--overwrite"}, description = "Allows to overwrite files in the directory")
+    @Option(names = {"--overwrite"}, negatable = true, description = "Allows to overwrite files in the directory", defaultValue = "false")
     Boolean overwrite;
 
+    @Spec
+    CommandSpec spec;
+
     private AgentConfig agentConfig;
+    private AgentConfig currAgentConfig = ConfigParser.parseProjectToConfig();
 
     @Override
     public Integer call() throws Exception {
-        if (checkCurrDir()) {
-            getAgentConfig();
-            getRequiredParams();
-            createDirs();
-            initGradle();
-            generateCode();
-        }
+        checkCurrDir();
+        getAgentConfig();
+        getRequiredParams();
+        createDirs();
+        initGradle();
+        generateCode();
         return 0;
     }
 
-    private boolean checkCurrDir() {
+    private void checkCurrDir() {
         File[] existingFiles = new File(System.getProperty("user.dir")).listFiles();
         if (!(existingFiles.length == 0)){
-            String warning = CommandLine.Help.Ansi.AUTO.string("@|bold,red WARNING:|@ @|red This directory is not empty. If you proceed some files may be overwritten.|@\n\n @|red Would you like to continue with project initialization? [y/|@@|red,bold N|@@|red ]: |@");
-            System.out.print(warning);
-            Scanner input = new Scanner(System.in);
-            String inputName = input.nextLine();
-            String ans = "n";
-            if (!inputName.isBlank())
-                ans = inputName.toLowerCase();
-            if (ans.equals("n"))
-                return false;
+            CommandLine.Model.OptionSpec overwriteOpt = spec.findOption("--overwrite");
+            if (!spec.commandLine().getParseResult().hasMatchedOption(overwriteOpt)){
+                String warning = Ansi.AUTO.string("@|bold,red WARNING:|@ @|red This directory is not empty.|@\n"
+                        + "Options to resolve conflict are:\n"
+                        + "   (1) Overwrite all files\n"
+                        + "   (2) Add only different files\n"
+                        + "Enter selection (default: 2) ");
+                System.out.print(warning);
+                Scanner input = new Scanner(System.in);
+                String inputName = input.nextLine();
+                String ans = "2";
+                if (!inputName.isBlank())
+                    ans = inputName;
+                overwrite = ans.equals("1");
+            }
+        } else {
+            overwrite = true;
         }
-        return true;
     }
 
     private void getRequiredParams() {
+        if (overwrite){
+            projectName = currAgentConfig.getProjectName();
+            packageName = currAgentConfig.getPackageName();
+        }
         if (projectName == null) {
             if (agentConfig.getProjectName() == null) {
                 String osName = System.getProperty("os.name").toLowerCase();
@@ -176,35 +197,73 @@ public class CSTInit implements Callable<Integer> {
         // settings
         String settingsTemplate = TemplatesBundle.getInstance().getTemplate("settings");
         settingsTemplate = settingsTemplate.replace("{{projectName}}", projectName);
-        FileWriter writer = new FileWriter("./settings.gradle");
-        writer.write(settingsTemplate);
-        writer.close();
+        File settingsGradle = new File("./settings.gradle");
+        if (overwrite || !settingsGradle.exists()) {
+            FileWriter writer = new FileWriter("./settings.gradle");
+            writer.write(settingsTemplate);
+            writer.close();
+        }
 
         // build
         String buildTemplate = TemplatesBundle.getInstance().getTemplate("build");
         buildTemplate = buildTemplate.replace("{{cstVersion}}", cstVersion);
         buildTemplate = buildTemplate.replace("{{mainClass}}", packageName + ".Main");
-        writer = new FileWriter("./build.gradle");
-        writer.write(buildTemplate);
-        writer.close();
+        File buildGradle = new File("./build.gradle");
+        if (overwrite || !buildGradle.exists()) {
+            FileWriter writer = new FileWriter("./build.gradle");
+            writer.write(buildTemplate);
+            writer.close();
+        }
     }
 
     private void generateCode() throws IOException {
         for (CodeletConfig codelet : agentConfig.getCodelets()) {
-            File path = new File("./src/main/java/" + packageName.replace(".", "/") + "/codelets/" + codelet.getGroup().toLowerCase());
-            path.mkdirs();
-            String codeletCode = codelet.generateCode(packageName);
-            FileWriter writer = new FileWriter(path + "/" + codelet.getName() + ".java");
-            writer.write(codeletCode);
-            writer.close();
+            boolean codeletCodeExists = currAgentConfig.getCodelets().stream()
+                    .map(CodeletConfig::getName)
+                    .anyMatch(e->e.equals(codelet.getName()));
+            if (overwrite || !codeletCodeExists) {
+                File path = new File("./src/main/java/" + packageName.replace(".", "/") + "/codelets/" + codelet.getGroup().toLowerCase());
+                path.mkdirs();
+                String codeletCode = codelet.generateCode(packageName);
+                FileWriter writer = new FileWriter(path + "/" + codelet.getName() + ".java");
+                writer.write(codeletCode);
+                writer.close();
+            }
         }
 
         File path = new File("./src/main/java/" + packageName.replace(".", "/"));
         path.mkdirs();
         String agentMindCode = agentConfig.generateCode();
+        if (!overwrite)
+            agentMindCode = mergeCode(agentMindCode, currAgentConfig.generateCode());
         FileWriter writer = new FileWriter(path + "/AgentMind.java");
         writer.write(agentMindCode);
         writer.close();
+    }
+
+    private static String mergeCode(String newCode, String currCode) {
+        int lastFoundLineIdx = 0;
+        boolean previousLineInserted = false;
+        List<String> currCodeSplit = new ArrayList<>(List.of(currCode.split("\n")));
+        System.out.println(currCodeSplit);
+        for (String line : newCode.split("\n")) {
+            if (!line.isBlank()) {
+                int idx = currCodeSplit.indexOf(line);
+                if (idx != -1) {
+                    lastFoundLineIdx = idx;
+                    previousLineInserted = false;
+                } else {
+                    if (!previousLineInserted) {
+                        System.out.println(currCodeSplit.size() + " " + lastFoundLineIdx);
+                        currCodeSplit.add(++lastFoundLineIdx, "\n");
+                        previousLineInserted = true;
+                    }
+                    System.out.println(currCodeSplit.size() + " " + lastFoundLineIdx);
+                    currCodeSplit.add(++lastFoundLineIdx, line);
+                }
+            }
+        }
+        return String.join("\n", currCodeSplit);
     }
 
     private void getAgentConfig() throws IOException {
