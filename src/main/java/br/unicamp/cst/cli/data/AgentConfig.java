@@ -3,6 +3,7 @@ package br.unicamp.cst.cli.data;
 import br.unicamp.cst.cli.util.TemplatesBundle;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 
@@ -205,5 +206,59 @@ public class AgentConfig {
                 ", codelets=" + codelets +
                 ", memories=" + memories +
                 '}';
+    }
+
+    public String toYaml(){
+        StringBuilder sb = new StringBuilder();
+        if (projectName != null)
+            sb.append("projectName: ").append(projectName).append("\n");
+        if (packageName != null)
+            sb.append("packageName: ").append(packageName).append("\n");
+
+        sb.append("\ncodelets:\n");
+        for (CodeletConfig codelet : codelets){
+            sb.append("  ")
+                .append("- name: ")
+                .append(codelet.getName())
+                .append("\n");
+            sb.append("    ")
+                .append("group: ")
+                .append(codelet.getGroup())
+                .append("\n");
+            sb.append("    ")
+                .append("in: ")
+                .append(Arrays.toString(codelet.getIn().toArray()))
+                .append("\n");
+            sb.append("    ")
+                .append("out: ")
+                .append(Arrays.toString(codelet.getOut().toArray()))
+                .append("\n");
+            sb.append("    ")
+                .append("broadcast: ")
+                .append(Arrays.toString(codelet.getBroadcast().toArray()))
+                .append("\n");
+        }
+
+        sb.append("\nmemories:\n");
+        for (MemoryConfig memory : memories){
+            sb.append("  ")
+                .append("- name: ")
+                .append(memory.getName())
+                .append("\n");
+            sb.append("    ")
+                    .append("type: ")
+                    .append(memory.getType())
+                    .append("\n");
+            sb.append("    ")
+                    .append("content: ")
+                    .append(memory.getContent())
+                    .append("\n");
+            sb.append("    ")
+                    .append("group: ")
+                    .append(memory.getGroup())
+                    .append("\n");
+        }
+
+        return sb.toString();
     }
 }

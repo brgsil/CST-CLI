@@ -34,7 +34,6 @@ public class ConfigParser {
         if (!agentMindFile.exists())
             return new AgentConfig();
 
-        System.out.println(agentMindFile.getAbsolutePath());
         //Parse file to AgentConfig
         InputStream fileStream = null;
         String agentMindCode = "";
@@ -122,15 +121,8 @@ public class ConfigParser {
         }
         agentConfig.setMemories(memories);
         agentConfig.setCodelets(codelets);
-        DumperOptions dumperOptions = new DumperOptions();
-        dumperOptions.setPrettyFlow(true);
-        dumperOptions.setIndentWithIndicator(true);
-        Yaml yaml = new Yaml(dumperOptions);
-        String yamlDump = yaml.dump(agentConfig);
-        yamlDump = yamlDump.replaceAll("\\[\n    ", "[").replaceAll("\n  ]", "]").replaceAll("\\{\n  ", "").replaceAll("}\n", "").replaceAll("-", "  -");
-        System.out.println(yamlDump);
 
-        return new AgentConfig();
+        return agentConfig;
     }
 
     private static CodeletConfig getCodeletConfig(String line, List<CodeletConfig> codelets) {
