@@ -243,22 +243,13 @@ public class CSTInit implements Callable<Integer> {
 
     private static String mergeCode(String newCode, String currCode) {
         int lastFoundLineIdx = 0;
-        boolean previousLineInserted = false;
         List<String> currCodeSplit = new ArrayList<>(List.of(currCode.split("\n")));
-        System.out.println(currCodeSplit);
         for (String line : newCode.split("\n")) {
             if (!line.isBlank()) {
                 int idx = currCodeSplit.indexOf(line);
                 if (idx != -1) {
                     lastFoundLineIdx = idx;
-                    previousLineInserted = false;
                 } else {
-                    if (!previousLineInserted) {
-                        System.out.println(currCodeSplit.size() + " " + lastFoundLineIdx);
-                        currCodeSplit.add(++lastFoundLineIdx, "\n");
-                        previousLineInserted = true;
-                    }
-                    System.out.println(currCodeSplit.size() + " " + lastFoundLineIdx);
                     currCodeSplit.add(++lastFoundLineIdx, line);
                 }
             }

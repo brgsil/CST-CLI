@@ -1,4 +1,6 @@
 ---
+projectName: Project
+packageName: my.project
 codelets:
   - name: SensoryCodelet
     group: Sensory
@@ -10,17 +12,22 @@ codelets:
     in: [MemoryOne]
     out: [MemoryTwo]
     broadcast: [MemoryThree]
+  - name: MotorCodelet
+    group: Motor
+    in: [MemoryOne]
+    out: [MemoryTwo]
+    broadcast: [MemoryThree]
 
 memories:
-  - name: MemoryOne
-    type: object
-    content: ~
-    group: SensorInput
-  - name: MemoryTwo
-    type: container
-    content: ~
-    group: Perception
-  - name: MemoryThree
-    type: object
-    content: ~
-    group: Global
+- content: null
+  group: SensorInput
+  name: memoryOne
+  type: object
+- content: null
+  group: Perception
+  name: memoryTwo
+  type: container
+- content: null
+  group: Global
+  name: memoryThree
+  type: object
