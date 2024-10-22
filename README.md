@@ -17,7 +17,7 @@ This is a command line interface (CLI) to easily create [CST projects](https://c
    ```
 3. Install deb package
    ```shell
-   sudo apt install ./build/cscli-package/cscli_0.1-1_amd64.deb
+   apt install ./build/cst_cli-package/cscli_0.1-1_amd64.deb
    ```
 4. Update `PATH` variable to include executable
    ```shell
@@ -29,5 +29,5 @@ This is a command line interface (CLI) to easily create [CST projects](https://c
 
 To create a new example CST project run the command:
 ```shell
-cscli init -f test.yaml
+cst init -f test.yaml
 ```

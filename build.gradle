@@ -64,7 +64,7 @@ jlink {
     jpackage {
         installerType = 'deb'
         outputDir = 'cst_cli-package'
-        imageName = 'cst_cli'
+        imageName = 'cst'
     }
     //launcher {jvmArgs = ['--add-opens cscli/br.unicamp.cst.commands=ALL-UNNAMED']}
 }
