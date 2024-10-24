@@ -20,7 +20,7 @@ public class CSTSave implements Callable<Integer> {
         AgentConfig agentConfig = ConfigParser.parseProjectToConfig();
 
         if (output == null) {
-            System.out.println(agentConfig.toYaml());
+            //System.out.println(agentConfig.toYaml());
         } else {
             FileWriter writer = new FileWriter(output);
             writer.write(agentConfig.toYaml());

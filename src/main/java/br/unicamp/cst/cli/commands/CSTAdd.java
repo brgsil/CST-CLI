@@ -22,7 +22,7 @@ public class CSTAdd implements Callable<Integer> {
                 + "   (2) Memory Object\n"
                 + "   (3) Memory Container\n"
                 + " @|bold Select an option (default 1) [1..3]:|@ ");
-        System.out.println(options);
+        System.out.print(options);
         Scanner input = new Scanner(System.in);
         String inputOption = input.nextLine();
         String selected = "1";
@@ -31,16 +31,16 @@ public class CSTAdd implements Callable<Integer> {
         switch (selected){
             case CODELET:
                 String askName = Ansi.AUTO.string("Codelet Name: ");
-                System.out.println(askName);
+                System.out.print(askName);
                 String codeletName = input.nextLine();
                 while (codeletName.isBlank())
                     System.out.println(Ansi.AUTO.string("@|red Codelet name cannot be empty|@"));
                     codeletName = input.nextLine();
-                System.out.println("Codelet inputs (comma separated): ");
+                System.out.print("Codelet inputs (comma separated): ");
                 String codeletInputs = input.nextLine();
-                System.out.println("Codelet outputs (comma separated): ");
+                System.out.print("Codelet outputs (comma separated): ");
                 String codeletOutputs = input.nextLine();
-                System.out.println("Codelet broadcast outputs (comma separated): ");
+                System.out.print("Codelet broadcast outputs (comma separated): ");
                 String codeletBroadcasts = input.nextLine();
 
                 break;

@@ -2,10 +2,7 @@ package br.unicamp.cst.cli.data;
 
 import br.unicamp.cst.cli.util.TemplatesBundle;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Iterator;
-import java.util.List;
+import java.util.*;
 
 import static br.unicamp.cst.cli.commands.CSTInit.TAB;
 import static br.unicamp.cst.cli.data.MemoryConfig.MEMORY_CONTAINER_TYPE;
@@ -260,5 +257,16 @@ public class AgentConfig {
         }
 
         return sb.toString();
+    }
+
+    public MemoryConfig findMemoryOrCreate(String nameAsString) {
+        Optional<MemoryConfig> memoryConfig = this.memories.stream().filter(m->m.getName().equals(nameAsString)).findFirst();
+        if (memoryConfig.isPresent()) {
+            return memoryConfig.get();
+        } else {
+            MemoryConfig newMemory = new MemoryConfig(nameAsString);
+            this.memories.add(newMemory);
+            return newMemory;
+        }
     }
 }

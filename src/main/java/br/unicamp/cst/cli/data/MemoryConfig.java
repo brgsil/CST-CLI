@@ -10,6 +10,12 @@ public class MemoryConfig {
     private String content;
     private String group;
 
+    public MemoryConfig(){}
+
+    public MemoryConfig(String name){
+        this.setName(name);
+    }
+
     public String getName() {
         return name;
     }
