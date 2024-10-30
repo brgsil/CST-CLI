@@ -63,7 +63,7 @@ jlink {
         requires 'java.logging'
     }
     jpackage {
-        installerType = 'deb'
+        //installerType = 'exe'
         outputDir = 'cst_cli-package'
         imageName = 'cst'
     }
