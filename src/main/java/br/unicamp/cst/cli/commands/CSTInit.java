@@ -49,7 +49,7 @@ public class CSTInit implements Callable<Integer> {
     CommandSpec spec;
 
     private AgentConfig agentConfig;
-    private AgentConfig currAgentConfig = ConfigParser.parseProjectToConfig();
+    private AgentConfig currAgentConfig;
 
     @Override
     public Integer call() throws Exception {
@@ -86,6 +86,7 @@ public class CSTInit implements Callable<Integer> {
     }
 
     private void getRequiredParams() {
+        currAgentConfig = ConfigParser.parseProjectToConfig();
         if (overwrite){
             projectName = currAgentConfig.getProjectName();
             packageName = currAgentConfig.getPackageName();

@@ -269,4 +269,23 @@ public class AgentConfig {
             return newMemory;
         }
     }
+
+    public Optional<MemoryConfig> findMemory(String memoryName) {
+        return this.memories.stream().filter(m->m.getName().equals(memoryName)).findFirst();
+    }
+
+    public CodeletConfig findCodeletOrCreate(String codeletName) {
+        Optional<CodeletConfig> codeletConfig = this.codelets.stream().filter(m->m.getName().equals(codeletName)).findFirst();
+        if (codeletConfig.isPresent()) {
+            return codeletConfig.get();
+        } else {
+            CodeletConfig newCodelet = new CodeletConfig(codeletName);
+            this.codelets.add(newCodelet);
+            return newCodelet;
+        }
+    }
+
+    public Optional<CodeletConfig> findCodelet(String codeletName) {
+        return this.codelets.stream().filter(c-> c.getName().equalsIgnoreCase(codeletName)).findFirst();
+    }
 }

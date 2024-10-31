@@ -2,20 +2,22 @@ package br.unicamp.cst.cli.data;
 
 import com.github.javaparser.StaticJavaParser;
 import com.github.javaparser.ast.CompilationUnit;
+import com.github.javaparser.ast.NodeList;
 import com.github.javaparser.ast.body.ConstructorDeclaration;
 import com.github.javaparser.ast.body.VariableDeclarator;
+import com.github.javaparser.ast.expr.AssignExpr;
+import com.github.javaparser.ast.expr.Expression;
 import com.github.javaparser.ast.expr.MethodCallExpr;
 import com.github.javaparser.ast.visitor.VoidVisitor;
 import com.github.javaparser.ast.visitor.VoidVisitorAdapter;
 
 import java.io.*;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 import static br.unicamp.cst.cli.data.AgentConfig.getVarName;
 import static br.unicamp.cst.cli.data.MemoryConfig.MEMORY_CONTAINER_TYPE;
 import static br.unicamp.cst.cli.data.MemoryConfig.MEMORY_OBJECT_TYPE;
-import static br.unicamp.cst.cli.util.Constants.CREATE_MEMORY_OBJECT_FUNCTION;
+import static br.unicamp.cst.cli.util.Constants.*;
 
 public class ConfigParser {
 
@@ -64,7 +66,9 @@ public class ConfigParser {
         AgentConfig testConfig = new AgentConfig();
         agentConstructor.accept(new AgentConfigCollector(), testConfig);
         System.out.println(testConfig);
+        return testConfig;
 
+        /*
         //Parse file to AgentConfig
         InputStream fileStream = null;
         String agentMindCode = "";
@@ -154,6 +158,8 @@ public class ConfigParser {
         agentConfig.setCodelets(codelets);
 
         return agentConfig;
+
+         */
     }
 
     private static CodeletConfig getCodeletConfig(String line, List<CodeletConfig> codelets) {
@@ -212,6 +218,8 @@ public class ConfigParser {
     }
 
     static class AgentConfigCollector extends VoidVisitorAdapter<AgentConfig>{
+        Map<String, String> codeletVariables = new HashMap<>();
+
         @Override
         public void visit(VariableDeclarator vd, AgentConfig agentConfig){
             if (vd.getTypeAsString().equals(MEMORY_OBJECT_TYPE)) {
@@ -220,8 +228,13 @@ public class ConfigParser {
             } else if (vd.getTypeAsString().equals(MEMORY_CONTAINER_TYPE)) {
                 MemoryConfig memoryConfig = agentConfig.findMemoryOrCreate(vd.getNameAsString());
                 memoryConfig.setType(MEMORY_CONTAINER_TYPE);
-            } else if (vd.getTypeAsString().equals("Memory")) {
+            } else if (vd.getTypeAsString().equals(MEMORY_BASE_TYPE)) {
                 agentConfig.findMemoryOrCreate(vd.getNameAsString());
+            } else if (vd.getTypeAsString().equals("Codelet")) {
+                if (vd.getInitializer().isPresent()) {
+                    String codeletName = vd.getInitializer().get().asObjectCreationExpr().getType().asString();
+                    CodeletConfig codeletConfig = agentConfig.findCodeletOrCreate(codeletName);
+                }
             }
             super.visit(vd, agentConfig);
         }
@@ -229,9 +242,62 @@ public class ConfigParser {
         @Override
         public void visit(MethodCallExpr mc, AgentConfig agentConfig){
             if (mc.getNameAsString().equals(CREATE_MEMORY_OBJECT_FUNCTION)){
-                System.out.println(mc.getArguments().get(0));
+                NodeList<Expression> args = mc.getArguments();
+                if (!args.isEmpty()){
+                    AssignExpr parentExp = (AssignExpr) mc.getParentNode().get();
+                    String memoryName = parentExp.getTarget().toString();
+                    Optional<MemoryConfig> memoryConfig = agentConfig.findMemory(memoryName);
+                    memoryConfig.ifPresent(config -> config.setType(MEMORY_OBJECT_TYPE));
+                }
+            } else if (mc.getNameAsString().equals(CREATE_MEMORY_CONTAINER_FUNCTION)){
+                NodeList<Expression> args = mc.getArguments();
+                if (!args.isEmpty()){
+                    AssignExpr parentExp = (AssignExpr) mc.getParentNode().get();
+                    String memoryName = parentExp.getTarget().toString();
+                    Optional<MemoryConfig> memoryConfig = agentConfig.findMemory(memoryName);
+                    memoryConfig.ifPresent(config -> config.setType(MEMORY_CONTAINER_TYPE));
+                }
+            } else if (mc.getNameAsString().equals(REGISTER_MEMORY_FUNCTION)){
+                NodeList<Expression> args = mc.getArguments();
+                if (!args.isEmpty()) {
+                    String memoryName = args.get(0).toString();
+                    String memoryGroup = args.get(1).toString().replaceAll("\"","");
+                    Optional<MemoryConfig> memoryConfig = agentConfig.findMemory(memoryName);
+                    memoryConfig.ifPresent(config -> config.setGroup(memoryGroup));
+                }
+            } else if (mc.getNameAsString().equals("registerCodelet")) {
+                NodeList<Expression> args = mc.getArguments();
+                if (!args.isEmpty()){
+                    String codeletName = args.get(0).toString().replaceAll("\"","");
+                    String codeletGroup = args.get(1).toString().replaceAll("\"","");
+                    Optional<CodeletConfig> codeletConfig = agentConfig.findCodelet(codeletName);
+                    codeletConfig.ifPresent(config -> config.setGroup(codeletGroup));
+                }
+            } else if (mc.getNameAsString().equals("addInput")) {
+                addMemoryToCodelet(mc, agentConfig, 1);
+            } else if (mc.getNameAsString().equals("addOutput")) {
+                addMemoryToCodelet(mc, agentConfig, 2);
+            } else if (mc.getNameAsString().equals("addBroadcast")) {
+                addMemoryToCodelet(mc, agentConfig, 3);
             }
             super.visit(mc, agentConfig);
+        }
+
+        private static void addMemoryToCodelet(MethodCallExpr mc, AgentConfig agentConfig, int type) {
+            if (mc.getScope().isPresent()){
+                String codeletName = mc.getScope().get().toString();
+                String memoryName = mc.getArguments().get(0).toString();
+                Optional<CodeletConfig> codeletConfig = agentConfig.findCodelet(codeletName);
+                Optional<MemoryConfig> memoryConfig = agentConfig.findMemory(memoryName);
+                if (codeletConfig.isPresent() && memoryConfig.isPresent()){
+                    if (type == 1)
+                        codeletConfig.get().addIn(memoryConfig.get().getName());
+                    if (type == 2)
+                        codeletConfig.get().addOut(memoryConfig.get().getName());
+                    if (type == 3)
+                        codeletConfig.get().addBroadcast(memoryConfig.get().getName());
+                }
+            }
         }
     }
 }
