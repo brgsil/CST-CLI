@@ -5,8 +5,8 @@ import br.unicamp.cst.cli.util.TemplatesBundle;
 import java.util.*;
 
 import static br.unicamp.cst.cli.commands.CSTInit.TAB;
-import static br.unicamp.cst.cli.data.MemoryConfig.MEMORY_CONTAINER_TYPE;
-import static br.unicamp.cst.cli.data.MemoryConfig.MEMORY_OBJECT_TYPE;
+import static br.unicamp.cst.cli.data.MemoryConfig.CONTAINER_TYPE;
+import static br.unicamp.cst.cli.data.MemoryConfig.OBJECT_TYPE;
 
 public class AgentConfig {
 
@@ -103,7 +103,7 @@ public class AgentConfig {
                     .append(TAB)
                     .append(getVarName(memory.getName()))
                     .append(" = ");
-            if (memory.getType().equals(MEMORY_OBJECT_TYPE))
+            if (memory.getType().equals(OBJECT_TYPE))
                 if (memory.getContent() == null) {
                     memoryInit.append("createMemoryObject(\"")
                             .append(memory.getName())
@@ -111,7 +111,7 @@ public class AgentConfig {
                 } else {
                     //TODO Initialize memory object with given content type
                 }
-            else if (memory.getType().equals(MEMORY_CONTAINER_TYPE)) {
+            else if (memory.getType().equals(CONTAINER_TYPE)) {
                 memoryInit.append("createMemoryContainer(\"")
                         .append(memory.getName())
                         .append("\");");

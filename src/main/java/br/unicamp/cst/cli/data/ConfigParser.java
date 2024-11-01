@@ -15,8 +15,6 @@ import java.io.*;
 import java.util.*;
 
 import static br.unicamp.cst.cli.data.AgentConfig.getVarName;
-import static br.unicamp.cst.cli.data.MemoryConfig.MEMORY_CONTAINER_TYPE;
-import static br.unicamp.cst.cli.data.MemoryConfig.MEMORY_OBJECT_TYPE;
 import static br.unicamp.cst.cli.util.Constants.*;
 
 public class ConfigParser {
@@ -224,16 +222,19 @@ public class ConfigParser {
         public void visit(VariableDeclarator vd, AgentConfig agentConfig){
             if (vd.getTypeAsString().equals(MEMORY_OBJECT_TYPE)) {
                 MemoryConfig memoryConfig = agentConfig.findMemoryOrCreate(vd.getNameAsString());
-                memoryConfig.setType(MEMORY_OBJECT_TYPE);
+                memoryConfig.setType(MemoryConfig.OBJECT_TYPE);
             } else if (vd.getTypeAsString().equals(MEMORY_CONTAINER_TYPE)) {
+                System.out.println(vd.toString());
                 MemoryConfig memoryConfig = agentConfig.findMemoryOrCreate(vd.getNameAsString());
-                memoryConfig.setType(MEMORY_CONTAINER_TYPE);
+                memoryConfig.setType(MemoryConfig.CONTAINER_TYPE);
             } else if (vd.getTypeAsString().equals(MEMORY_BASE_TYPE)) {
                 agentConfig.findMemoryOrCreate(vd.getNameAsString());
             } else if (vd.getTypeAsString().equals("Codelet")) {
                 if (vd.getInitializer().isPresent()) {
                     String codeletName = vd.getInitializer().get().asObjectCreationExpr().getType().asString();
                     CodeletConfig codeletConfig = agentConfig.findCodeletOrCreate(codeletName);
+                    String varName = vd.getNameAsString();
+                    codeletVariables.put(varName, codeletName);
                 }
             }
             super.visit(vd, agentConfig);
@@ -247,7 +248,7 @@ public class ConfigParser {
                     AssignExpr parentExp = (AssignExpr) mc.getParentNode().get();
                     String memoryName = parentExp.getTarget().toString();
                     Optional<MemoryConfig> memoryConfig = agentConfig.findMemory(memoryName);
-                    memoryConfig.ifPresent(config -> config.setType(MEMORY_OBJECT_TYPE));
+                    memoryConfig.ifPresent(config -> config.setType(MemoryConfig.OBJECT_TYPE));
                 }
             } else if (mc.getNameAsString().equals(CREATE_MEMORY_CONTAINER_FUNCTION)){
                 NodeList<Expression> args = mc.getArguments();
@@ -255,7 +256,7 @@ public class ConfigParser {
                     AssignExpr parentExp = (AssignExpr) mc.getParentNode().get();
                     String memoryName = parentExp.getTarget().toString();
                     Optional<MemoryConfig> memoryConfig = agentConfig.findMemory(memoryName);
-                    memoryConfig.ifPresent(config -> config.setType(MEMORY_CONTAINER_TYPE));
+                    memoryConfig.ifPresent(config -> config.setType(MemoryConfig.CONTAINER_TYPE));
                 }
             } else if (mc.getNameAsString().equals(REGISTER_MEMORY_FUNCTION)){
                 NodeList<Expression> args = mc.getArguments();
@@ -268,7 +269,8 @@ public class ConfigParser {
             } else if (mc.getNameAsString().equals("registerCodelet")) {
                 NodeList<Expression> args = mc.getArguments();
                 if (!args.isEmpty()){
-                    String codeletName = args.get(0).toString().replaceAll("\"","");
+                    String codeletVarName = args.get(0).toString();
+                    String codeletName = codeletVariables.get(codeletVarName);
                     String codeletGroup = args.get(1).toString().replaceAll("\"","");
                     Optional<CodeletConfig> codeletConfig = agentConfig.findCodelet(codeletName);
                     codeletConfig.ifPresent(config -> config.setGroup(codeletGroup));
@@ -283,9 +285,10 @@ public class ConfigParser {
             super.visit(mc, agentConfig);
         }
 
-        private static void addMemoryToCodelet(MethodCallExpr mc, AgentConfig agentConfig, int type) {
+        private void addMemoryToCodelet(MethodCallExpr mc, AgentConfig agentConfig, int type) {
             if (mc.getScope().isPresent()){
-                String codeletName = mc.getScope().get().toString();
+                String codeletVarName = mc.getScope().get().toString();
+                String codeletName = codeletVariables.get(codeletVarName);
                 String memoryName = mc.getArguments().get(0).toString();
                 Optional<CodeletConfig> codeletConfig = agentConfig.findCodelet(codeletName);
                 Optional<MemoryConfig> memoryConfig = agentConfig.findMemory(memoryName);
