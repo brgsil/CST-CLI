@@ -1,6 +1,11 @@
 # The Cognitive System Command Line Interface - CSCLI
+<br>
 
 This is a command line interface (CLI) to easily create [CST projects](https://cst.fee.unicamp.br).
+> [!WARNING]  
+> **This project has been moved to CST-Group team. Please access [this page](https://github.com/CST-Group/CST-CLI) to see current project state.**
+
+
 
 ## Installation
 
