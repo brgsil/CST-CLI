@@ -64,9 +64,9 @@ public class CSTInit implements Callable<Integer> {
 
     private void checkCurrDir() {
         File[] existingFiles = new File(System.getProperty("user.dir")).listFiles();
-        if (!(existingFiles.length == 0)){
+        if (!(existingFiles.length == 0)) {
             // Ignore configuration file
-            if (!Arrays.stream(existingFiles).anyMatch(f->f.getName().contains(".yaml"))) {
+            if (!Arrays.stream(existingFiles).allMatch(f -> f.getName().contains(".yaml"))) {
                 CommandLine.Model.OptionSpec overwriteOpt = spec.findOption("--overwrite");
                 if (!spec.commandLine().getParseResult().hasMatchedOption(overwriteOpt)) {
                     String warning = Ansi.AUTO.string("@|bold,red WARNING:|@ @|red This directory is not empty.|@\n"
@@ -81,11 +81,11 @@ public class CSTInit implements Callable<Integer> {
                     if (!inputName.isBlank())
                         ans = inputName;
                     overwrite = ans.equals("1");
+                    return;
                 }
             }
-        } else {
-            overwrite = true;
         }
+        overwrite = true;
     }
 
     private void getRequiredParams() {
@@ -263,8 +263,13 @@ public class CSTInit implements Callable<Integer> {
 
     private void getAgentConfig() throws IOException {
         String configInfo = "";
-        if (config != null)
+        if (config != null) {
+            if (!config.exists()) {
+                System.out.println("Configuration file do not exists!");
+                System.exit(1);
+            }
             configInfo = Files.lines(config.toPath()).collect(Collectors.joining("\n"));
+        }
         if (configInfo.isBlank()) {
             agentConfig = new AgentConfig();
         } else {
