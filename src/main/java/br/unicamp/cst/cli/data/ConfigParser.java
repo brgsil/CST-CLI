@@ -63,7 +63,7 @@ public class ConfigParser {
         //agentConstructor.accept(new VariableCollector(MEMORY_CONTAINER_TYPE), memoryContainers);
         AgentConfig testConfig = new AgentConfig();
         agentConstructor.accept(new AgentConfigCollector(), testConfig);
-        System.out.println(testConfig);
+        //System.out.println(testConfig);
         return testConfig;
 
         /*
@@ -224,7 +224,7 @@ public class ConfigParser {
                 MemoryConfig memoryConfig = agentConfig.findMemoryOrCreate(vd.getNameAsString());
                 memoryConfig.setType(MemoryConfig.OBJECT_TYPE);
             } else if (vd.getTypeAsString().equals(MEMORY_CONTAINER_TYPE)) {
-                System.out.println(vd.toString());
+                //System.out.println(vd.toString());
                 MemoryConfig memoryConfig = agentConfig.findMemoryOrCreate(vd.getNameAsString());
                 memoryConfig.setType(MemoryConfig.CONTAINER_TYPE);
             } else if (vd.getTypeAsString().equals(MEMORY_BASE_TYPE)) {

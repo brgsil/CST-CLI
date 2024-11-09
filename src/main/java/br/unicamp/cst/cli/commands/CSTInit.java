@@ -65,20 +65,23 @@ public class CSTInit implements Callable<Integer> {
     private void checkCurrDir() {
         File[] existingFiles = new File(System.getProperty("user.dir")).listFiles();
         if (!(existingFiles.length == 0)){
-            CommandLine.Model.OptionSpec overwriteOpt = spec.findOption("--overwrite");
-            if (!spec.commandLine().getParseResult().hasMatchedOption(overwriteOpt)){
-                String warning = Ansi.AUTO.string("@|bold,red WARNING:|@ @|red This directory is not empty.|@\n"
-                        + "Options to resolve conflict are:\n"
-                        + "   (1) Overwrite all files\n"
-                        + "   (2) Add only different files\n"
-                        + "Enter selection (default: 2) ");
-                System.out.print(warning);
-                Scanner input = new Scanner(System.in);
-                String inputName = input.nextLine();
-                String ans = "2";
-                if (!inputName.isBlank())
-                    ans = inputName;
-                overwrite = ans.equals("1");
+            // Ignore configuration file
+            if (!Arrays.stream(existingFiles).anyMatch(f->f.getName().contains(".yaml"))) {
+                CommandLine.Model.OptionSpec overwriteOpt = spec.findOption("--overwrite");
+                if (!spec.commandLine().getParseResult().hasMatchedOption(overwriteOpt)) {
+                    String warning = Ansi.AUTO.string("@|bold,red WARNING:|@ @|red This directory is not empty.|@\n"
+                            + "Options to resolve conflict are:\n"
+                            + "   (1) Overwrite all files\n"
+                            + "   (2) Add only different files\n"
+                            + "Enter selection (default: 2) ");
+                    System.out.print(warning);
+                    Scanner input = new Scanner(System.in);
+                    String inputName = input.nextLine();
+                    String ans = "2";
+                    if (!inputName.isBlank())
+                        ans = inputName;
+                    overwrite = ans.equals("1");
+                }
             }
         } else {
             overwrite = true;
