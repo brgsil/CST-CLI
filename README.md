@@ -6,7 +6,7 @@ This is a command line interface (CLI) to easily create [CST projects](https://c
 
 Download the deb (Debian/Ubuntu) or rpm package from the latest release, install it on your machine and add the executable to your `PATH` variable
 ```shell
-echo 'export PATH="$PATH:/opt/cst_cli/bin"'
+echo 'export PATH="$PATH:/opt/cst-cli/bin"'
 source ~/.bashrc
 ```
 
@@ -41,7 +41,7 @@ To compile and package the CLI locally is necessary to have [Docker](https://doc
 3. Install deb or rpm package from `build/cst_cli` folder
 4. Update `PATH` variable to include executable
    ```shell
-   echo 'export PATH="$PATH:/opt/cst_cli/bin"' >> ~/.bashrc
+   echo 'export PATH="$PATH:/opt/cst-cli/bin"' >> ~/.bashrc
    source ~/.bashrc
    ```
 
