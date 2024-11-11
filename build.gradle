@@ -6,7 +6,7 @@ plugins {
 }
 
 group = 'br.unicamp.cst.cli'
-version = '0.1'
+version = '0.2'
 
 repositories {
     mavenCentral()
@@ -64,7 +64,7 @@ jlink {
     }
     jpackage {
         //installerType = 'exe'
-        outputDir = 'cst_cli-package'
+        outputDir = 'cst_cli'
         imageName = 'cst'
     }
     //launcher {jvmArgs = ['--add-opens cscli/br.unicamp.cst.commands=ALL-UNNAMED']}
