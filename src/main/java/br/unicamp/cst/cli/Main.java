@@ -9,7 +9,7 @@ import picocli.CommandLine;
 @Command(name = "cst",
         synopsisSubcommandLabel = "COMMAND",
         mixinStandardHelpOptions = true,
-        version = "cst_cli 0.1",
+        version = "Beta Version 0.1",
         subcommands = {
             CSTInit.class,
             CSTSave.class,

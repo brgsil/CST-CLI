@@ -167,7 +167,7 @@ public class AgentConfig {
             }
         }
 
-        templateInstance = templateInstance.replace("{{rootPackage}}", packageName);
+        templateInstance = templateInstance.replace("{{rootPackage}}", packageName == null ? "" : packageName);
         templateInstance = templateInstance.replace("{{codeletsImport}}", codeletsImport.toString());
         templateInstance = templateInstance.replace("{{codeletGroups}}", codeletGroups.toString());
         templateInstance = templateInstance.replace("{{memoryGroups}}", memoryGroups.toString());

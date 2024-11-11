@@ -64,7 +64,7 @@ jlink {
     }
     jpackage {
         //installerType = 'exe'
-        outputDir = 'cst_cli-package'
+        outputDir = 'cst_cli'
         imageName = 'cst'
     }
     //launcher {jvmArgs = ['--add-opens cscli/br.unicamp.cst.commands=ALL-UNNAMED']}

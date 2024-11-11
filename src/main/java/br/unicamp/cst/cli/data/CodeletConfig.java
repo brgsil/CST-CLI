@@ -131,4 +131,8 @@ public class CodeletConfig {
                 ", broadcast=" + broadcast +
                 '}';
     }
+
+    public String getPackage() {
+        return ".codelets." + group.toLowerCase() + "." + name;
+    }
 }

@@ -25,7 +25,7 @@ import java.util.Scanner;
 import java.util.concurrent.Callable;
 import java.util.stream.Collectors;
 
-@Command(name = "init", description = "Initialize a new CST project")
+@Command(name = "init", description = "Initialize a new CST project", mixinStandardHelpOptions = true)
 public class CSTInit implements Callable<Integer> {
     public static String TAB = "    ";
     public static String PARSER_ERROR = "Error parsing config file";
@@ -64,25 +64,28 @@ public class CSTInit implements Callable<Integer> {
 
     private void checkCurrDir() {
         File[] existingFiles = new File(System.getProperty("user.dir")).listFiles();
-        if (!(existingFiles.length == 0)){
-            CommandLine.Model.OptionSpec overwriteOpt = spec.findOption("--overwrite");
-            if (!spec.commandLine().getParseResult().hasMatchedOption(overwriteOpt)){
-                String warning = Ansi.AUTO.string("@|bold,red WARNING:|@ @|red This directory is not empty.|@\n"
-                        + "Options to resolve conflict are:\n"
-                        + "   (1) Overwrite all files\n"
-                        + "   (2) Add only different files\n"
-                        + "Enter selection (default: 2) ");
-                System.out.print(warning);
-                Scanner input = new Scanner(System.in);
-                String inputName = input.nextLine();
-                String ans = "2";
-                if (!inputName.isBlank())
-                    ans = inputName;
-                overwrite = ans.equals("1");
+        if (!(existingFiles.length == 0)) {
+            // Ignore configuration file
+            if (!Arrays.stream(existingFiles).allMatch(f -> f.getName().contains(".yaml"))) {
+                CommandLine.Model.OptionSpec overwriteOpt = spec.findOption("--overwrite");
+                if (!spec.commandLine().getParseResult().hasMatchedOption(overwriteOpt)) {
+                    String warning = Ansi.AUTO.string("@|bold,red WARNING:|@ @|red This directory is not empty.|@\n"
+                            + "Options to resolve conflict are:\n"
+                            + "   (1) Overwrite all files\n"
+                            + "   (2) Add only different files\n"
+                            + "Enter selection (default: 2) ");
+                    System.out.print(warning);
+                    Scanner input = new Scanner(System.in);
+                    String inputName = input.nextLine();
+                    String ans = "2";
+                    if (!inputName.isBlank())
+                        ans = inputName;
+                    overwrite = ans.equals("1");
+                    return;
+                }
             }
-        } else {
-            overwrite = true;
         }
+        overwrite = true;
     }
 
     private void getRequiredParams() {
@@ -260,8 +263,13 @@ public class CSTInit implements Callable<Integer> {
 
     private void getAgentConfig() throws IOException {
         String configInfo = "";
-        if (config != null)
+        if (config != null) {
+            if (!config.exists()) {
+                System.out.println("Configuration file do not exists!");
+                System.exit(1);
+            }
             configInfo = Files.lines(config.toPath()).collect(Collectors.joining("\n"));
+        }
         if (configInfo.isBlank()) {
             agentConfig = new AgentConfig();
         } else {
