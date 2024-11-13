@@ -18,6 +18,7 @@ import org.yaml.snakeyaml.constructor.Constructor;
 
 import java.io.*;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -26,7 +27,7 @@ import java.util.concurrent.Callable;
 import java.util.stream.Collectors;
 
 @Command(name = "init", description = "Initialize a new CST project")
-public class CSTInit implements Callable<Integer> {
+public class CSTInit implements Runnable {
     public static String TAB = "    ";
     public static String PARSER_ERROR = "Error parsing config file";
 
@@ -45,6 +46,9 @@ public class CSTInit implements Callable<Integer> {
     @Option(names = {"--overwrite"}, negatable = true, description = "Allows to overwrite files in the directory", defaultValue = "false")
     Boolean overwrite;
 
+    @Option(names = {"-d", "--dir"}, description = "Root directory for project initialization")
+    Path rootFolder;
+
     @Spec
     CommandSpec spec;
 
@@ -52,18 +56,25 @@ public class CSTInit implements Callable<Integer> {
     private AgentConfig currAgentConfig;
 
     @Override
-    public Integer call() throws Exception {
-        checkCurrDir();
-        getAgentConfig();
-        getRequiredParams();
-        createDirs();
-        initGradle();
-        generateCode();
-        return 0;
+    public void run() {
+        try {
+            checkCurrDir();
+            getAgentConfig();
+            getRequiredParams();
+            createDirs();
+            initGradle();
+            generateCode();
+        } catch (Exception e){
+            e.printStackTrace();
+            System.exit(1);
+        }
     }
 
     private void checkCurrDir() {
-        File[] existingFiles = new File(System.getProperty("user.dir")).listFiles();
+        if (rootFolder == null){
+            rootFolder = Path.of(System.getProperty("user.dir"));
+        }
+        File[] existingFiles = new File(rootFolder.toUri()).listFiles();
         if (!(existingFiles.length == 0)){
             CommandLine.Model.OptionSpec overwriteOpt = spec.findOption("--overwrite");
             if (!spec.commandLine().getParseResult().hasMatchedOption(overwriteOpt)){
@@ -87,60 +98,57 @@ public class CSTInit implements Callable<Integer> {
 
     private void getRequiredParams() {
         currAgentConfig = ConfigParser.parseProjectToConfig();
-        if (overwrite){
+        if (!overwrite){
             projectName = currAgentConfig.getProjectName();
             packageName = currAgentConfig.getPackageName();
         }
+        Scanner input = new Scanner(System.in);
         if (projectName == null) {
             if (agentConfig.getProjectName() == null) {
                 String osName = System.getProperty("os.name").toLowerCase();
                 String[] splitPath = new String[0];
                 if (osName.contains("win"))
-                    splitPath = System.getProperty("user.dir").split("\\");
+                    splitPath = rootFolder.toString().split("\\");
                 if (osName.contains("nix") || osName.contains("nux") || osName.contains("aix"))
-                    splitPath = System.getProperty("user.dir").split("/");
+                    splitPath = rootFolder.toString().split("/");
 
                 projectName = splitPath[splitPath.length - 1];
                 System.out.print("Enter project name (default: " + projectName + ") : ");
-                Scanner input = new Scanner(System.in);
                 String inputName = input.nextLine();
                 if (!inputName.isBlank())
                     projectName = inputName;
-
-                agentConfig.setProjectName(projectName);
             } else {
                 projectName = agentConfig.getProjectName();
             }
         }
+        agentConfig.setProjectName(projectName);
 
         if (packageName == null) {
             if (agentConfig.getPackageName() == null) {
                 packageName = projectName.toLowerCase();
                 System.out.print("Enter package name (default: " + packageName + "): ");
-                Scanner input = new Scanner(System.in);
                 String inputName = input.nextLine();
                 if (!inputName.isBlank())
                     packageName = inputName;
-
-                agentConfig.setPackageName(packageName);
             } else {
                 packageName = agentConfig.getPackageName();
             }
         }
+        agentConfig.setPackageName(packageName);
     }
 
     private void createDirs() throws IOException {
         // Main java package dir
-        File path = new File("./src/main/java/" + packageName.replace(".", "/") + "/codelets");
+        File path = new File(rootFolder + "/src/main/java/" + packageName.replace(".", "/") + "/codelets");
         path.mkdirs();
         // Resources dir
-        path = new File("./src/main/resources");
+        path = new File(rootFolder + "/src/main/resources");
         path.mkdirs();
         // Test package dir
-        path = new File("./src/test/java");
+        path = new File(rootFolder + "/src/test/java");
         path.mkdirs();
         // Main.java
-        path = new File("./src/main/java/" + packageName.replace(".", "/"));
+        path = new File(rootFolder + "/src/main/java/" + packageName.replace(".", "/"));
         path.mkdirs();
         String mainTemplate = TemplatesBundle.getInstance().getTemplate("MainTemplate");
         mainTemplate = mainTemplate.replace("{{rootPackage}}", packageName);
@@ -155,7 +163,7 @@ public class CSTInit implements Callable<Integer> {
         String osName = System.getProperty("os.name").toLowerCase();
         if (osName.contains("nix") || osName.contains("nux") || osName.contains("aix")) {
             InputStream gradle = CSTInit.class.getResourceAsStream("/gradle/gradlew");
-            OutputStream streamOut = new FileOutputStream("./gradlew");
+            OutputStream streamOut = new FileOutputStream(rootFolder + "/gradlew");
             byte[] buffer = new byte[4096];
             int bytes;
             while ((bytes = gradle.read(buffer)) > 0) {
@@ -163,10 +171,11 @@ public class CSTInit implements Callable<Integer> {
             }
             gradle.close();
             streamOut.close();
-            Runtime.getRuntime().exec("chmod u+x gradlew");
+            // TODO: test if system type
+            Runtime.getRuntime().exec("chmod u+x " + rootFolder + "/gradlew");
         } else {
             InputStream gradle = CSTInit.class.getResourceAsStream("/gradle/gradlew.bat");
-            OutputStream streamOut = new FileOutputStream("./gradlew.bat");
+            OutputStream streamOut = new FileOutputStream(rootFolder + "/gradlew.bat");
             byte[] buffer = new byte[4096];
             int bytes;
             while ((bytes = gradle.read(buffer)) > 0) {
@@ -177,11 +186,11 @@ public class CSTInit implements Callable<Integer> {
         }
 
         // Gradle Wrapper
-        File path = new File("./gradle/wrapper");
+        File path = new File(rootFolder + "/gradle/wrapper");
         path.mkdirs();
 
         InputStream gradleJar = CSTInit.class.getResourceAsStream("/gradle/gradle/wrapper/gradle-wrapper.jar");
-        OutputStream streamOut = new FileOutputStream("./gradle/wrapper/gradle-wrapper.jar");
+        OutputStream streamOut = new FileOutputStream(rootFolder + "/gradle/wrapper/gradle-wrapper.jar");
         byte[] buffer = new byte[4096];
         int bytes;
         while ((bytes = gradleJar.read(buffer)) > 0) {
@@ -189,7 +198,7 @@ public class CSTInit implements Callable<Integer> {
         }
 
         InputStream gradleProperties = CSTInit.class.getResourceAsStream("/gradle/gradle/wrapper/gradle-wrapper.properties");
-        streamOut = new FileOutputStream("./gradle/wrapper/gradle-wrapper.properties");
+        streamOut = new FileOutputStream(rootFolder + "/gradle/wrapper/gradle-wrapper.properties");
         buffer = new byte[4096];
         while ((bytes = gradleProperties.read(buffer)) > 0) {
             streamOut.write(buffer, 0, bytes);
@@ -198,9 +207,9 @@ public class CSTInit implements Callable<Integer> {
         // settings
         String settingsTemplate = TemplatesBundle.getInstance().getTemplate("settings");
         settingsTemplate = settingsTemplate.replace("{{projectName}}", projectName);
-        File settingsGradle = new File("./settings.gradle");
+        File settingsGradle = new File(rootFolder + "/settings.gradle");
         if (overwrite || !settingsGradle.exists()) {
-            FileWriter writer = new FileWriter("./settings.gradle");
+            FileWriter writer = new FileWriter(rootFolder + "/settings.gradle");
             writer.write(settingsTemplate);
             writer.close();
         }
@@ -209,9 +218,9 @@ public class CSTInit implements Callable<Integer> {
         String buildTemplate = TemplatesBundle.getInstance().getTemplate("build");
         buildTemplate = buildTemplate.replace("{{cstVersion}}", cstVersion);
         buildTemplate = buildTemplate.replace("{{mainClass}}", packageName + ".Main");
-        File buildGradle = new File("./build.gradle");
+        File buildGradle = new File(rootFolder + "/build.gradle");
         if (overwrite || !buildGradle.exists()) {
-            FileWriter writer = new FileWriter("./build.gradle");
+            FileWriter writer = new FileWriter(rootFolder + "/build.gradle");
             writer.write(buildTemplate);
             writer.close();
         }
@@ -223,7 +232,7 @@ public class CSTInit implements Callable<Integer> {
                     .map(CodeletConfig::getName)
                     .anyMatch(e->e.equals(codelet.getName()));
             if (overwrite || !codeletCodeExists) {
-                File path = new File("./src/main/java/" + packageName.replace(".", "/") + "/codelets/" + codelet.getGroup().toLowerCase());
+                File path = new File(rootFolder + "/src/main/java/" + packageName.replace(".", "/") + "/codelets/" + codelet.getGroup().toLowerCase());
                 path.mkdirs();
                 String codeletCode = codelet.generateCode(packageName);
                 FileWriter writer = new FileWriter(path + "/" + codelet.getName() + ".java");
@@ -232,10 +241,10 @@ public class CSTInit implements Callable<Integer> {
             }
         }
 
-        File path = new File("./src/main/java/" + packageName.replace(".", "/"));
+        File path = new File(rootFolder + "/src/main/java/" + packageName.replace(".", "/"));
         path.mkdirs();
         String agentMindCode = agentConfig.generateCode();
-        if (!overwrite)
+        if (!overwrite && currAgentConfig.getPackageName() != null)
             agentMindCode = mergeCode(agentMindCode, currAgentConfig.generateCode());
         FileWriter writer = new FileWriter(path + "/AgentMind.java");
         writer.write(agentMindCode);
