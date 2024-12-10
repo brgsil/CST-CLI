@@ -61,7 +61,7 @@ public class AgentConfig {
         CompilationUnit compilationUnit = new CompilationUnit();
 
         //Imports
-        compilationUnit.setPackageDeclaration(packageName);
+        compilationUnit.setPackageDeclaration(this.packageName);
         for (CodeletConfig codelet : this.getCodelets()) {
             compilationUnit.addImport(codelet.getClassImport(this.packageName));
         }

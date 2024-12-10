@@ -88,7 +88,7 @@ public class CodeletConfig {
 
         CompilationUnit compilationUnit = new CompilationUnit();
 
-        compilationUnit.setPackageDeclaration(getPackage(rootPackage));
+        compilationUnit.setPackageDeclaration(this.getPackage(rootPackage));
         compilationUnit.addImport("br.unicamp.cst.core.entities.Codelet");
         compilationUnit.addImport("br.unicamp.cst.core.entities.Memory");
 
