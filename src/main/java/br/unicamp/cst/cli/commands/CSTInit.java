@@ -5,6 +5,8 @@ import br.unicamp.cst.cli.data.CodeletConfig;
 import br.unicamp.cst.cli.data.ConfigParser;
 import br.unicamp.cst.cli.util.TemplatesBundle;
 
+import com.github.javaparser.ParseProblemException;
+import org.yaml.snakeyaml.error.YAMLException;
 import picocli.CommandLine;
 import picocli.CommandLine.Spec;
 import picocli.CommandLine.Model.CommandSpec;
@@ -27,7 +29,7 @@ import java.util.concurrent.Callable;
 import java.util.stream.Collectors;
 
 @Command(name = "init", description = "Initialize a new CST project")
-public class CSTInit implements Runnable {
+public class CSTInit implements Callable<Integer> {
     public static String TAB = "    ";
     public static String PARSER_ERROR = "Error parsing config file";
 
@@ -52,39 +54,49 @@ public class CSTInit implements Runnable {
     @Spec
     CommandSpec spec;
 
+    private Scanner input;
+
     private AgentConfig agentConfig;
     private AgentConfig currAgentConfig;
 
     @Override
-    public void run() {
+    public Integer call() {
         try {
+            input = new Scanner(System.in);
             checkCurrDir();
             getAgentConfig();
             getRequiredParams();
             createDirs();
             initGradle();
             generateCode();
-        } catch (Exception e){
+            return 0;
+        } catch (YAMLException e) {
+            System.out.println("Configuration File contains errors. Could not parse configurations.");
+            String[] errorLines = e.toString().split("\n");
+            String errorLine = errorLines[1] + "\n" + errorLines[2] + "\n" + errorLines[3];
+            System.out.println(errorLine);
+            return 1;
+        } catch (Exception e) {
+            System.out.println(e.toString());
             e.printStackTrace();
-            System.exit(1);
+            return 1;
         }
     }
 
     private void checkCurrDir() {
-        if (rootFolder == null){
+        if (rootFolder == null) {
             rootFolder = Path.of(System.getProperty("user.dir"));
         }
         File[] existingFiles = new File(rootFolder.toUri()).listFiles();
-        if (!(existingFiles.length == 0)){
+        if (!(existingFiles.length == 0) && !Arrays.stream(existingFiles).allMatch(e -> e.toString().contains(".yaml"))) {
             CommandLine.Model.OptionSpec overwriteOpt = spec.findOption("--overwrite");
-            if (!spec.commandLine().getParseResult().hasMatchedOption(overwriteOpt)){
+            if (!spec.commandLine().getParseResult().hasMatchedOption(overwriteOpt)) {
                 String warning = Ansi.AUTO.string("@|bold,red WARNING:|@ @|red This directory is not empty.|@\n"
                         + "Options to resolve conflict are:\n"
                         + "   (1) Overwrite all files\n"
                         + "   (2) Add only different files\n"
                         + "Enter selection (default: 2) ");
                 System.out.print(warning);
-                Scanner input = new Scanner(System.in);
                 String inputName = input.nextLine();
                 String ans = "2";
                 if (!inputName.isBlank())
@@ -98,11 +110,10 @@ public class CSTInit implements Runnable {
 
     private void getRequiredParams() {
         currAgentConfig = ConfigParser.parseProjectToConfig();
-        if (!overwrite){
+        if (!overwrite) {
             projectName = currAgentConfig.getProjectName();
             packageName = currAgentConfig.getPackageName();
         }
-        Scanner input = new Scanner(System.in);
         if (projectName == null) {
             if (agentConfig.getProjectName() == null) {
                 String osName = System.getProperty("os.name").toLowerCase();
@@ -230,11 +241,17 @@ public class CSTInit implements Runnable {
         for (CodeletConfig codelet : agentConfig.getCodelets()) {
             boolean codeletCodeExists = currAgentConfig.getCodelets().stream()
                     .map(CodeletConfig::getName)
-                    .anyMatch(e->e.equals(codelet.getName()));
+                    .anyMatch(e -> e.equals(codelet.getName()));
             if (overwrite || !codeletCodeExists) {
                 File path = new File(rootFolder + "/src/main/java/" + packageName.replace(".", "/") + "/codelets/" + codelet.getGroup().toLowerCase());
                 path.mkdirs();
-                String codeletCode = codelet.generateCode(packageName);
+                String codeletCode = "";
+                try {
+                    codeletCode = codelet.generateCode(packageName);
+                } catch (ParseProblemException e) {
+                    //TODO: Handle this excpetion
+                    throw new IOException();
+                }
                 FileWriter writer = new FileWriter(path + "/" + codelet.getName() + ".java");
                 writer.write(codeletCode);
                 writer.close();
@@ -269,8 +286,9 @@ public class CSTInit implements Runnable {
 
     private void getAgentConfig() throws IOException {
         String configInfo = "";
-        if (config != null)
+        if (config != null) {
             configInfo = Files.lines(config.toPath()).collect(Collectors.joining("\n"));
+        }
         if (configInfo.isBlank()) {
             agentConfig = new AgentConfig();
         } else {
