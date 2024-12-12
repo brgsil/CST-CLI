@@ -134,38 +134,7 @@ public class CSTInitTest {
 
     @Test
     public void testCorrectYAMLConfigParsing() throws IOException {
-        // Create a mock YAML config file
-        String yamlConfig = """
-                projectName: MyProject
-                packageName: my.project
-                codelets:
-                  - name: TestCodelet
-                    group: test
-                    in: [MemOne]
-                    out: [MemTwo]
-                    broadcast: [MemThree]
-                memories:
-                  - content: null
-                    group: test
-                    name: MemOne
-                    type: object
-                  - content: null
-                    group: test
-                    name: MemTwo
-                    type: container
-                  - content: null
-                    group: test
-                    name: MemThree
-                    type: object""";
-
-        File configFile = new File(tempDir.toString(), "test_config.yaml");
-        try {
-            FileWriter writer = new FileWriter(configFile);
-            writer.write(yamlConfig);
-            writer.close();
-        } catch (IOException e) {
-            fail("Failed to create mock config file");
-        }
+        File configFile = createMockYAMLFile();
         exitCode = new CommandLine(new Main()).execute("init", "--file", configFile.toString());
         assertEquals(0, exitCode);
 
@@ -209,8 +178,8 @@ public class CSTInitTest {
                       \s
                         Codelet testCodelet = new TestCodelet();
                         testCodelet.addInput(memOne);
-                        testCodelet.addInput(memTwo);
-                        testCodelet.addInput(memThree);
+                        testCodelet.addOutput(memTwo);
+                        testCodelet.addBroadcast(memThree);
                         insertCodelet(testCodelet);
                         registerCodelet(testCodelet, "test");
                       \s
@@ -222,6 +191,42 @@ public class CSTInitTest {
                 }""";
 
         assertEquals(expectedAgentMind, readFileFromTmpDir("src/main/java/my/project/AgentMind.java"));
+    }
+
+    private File createMockYAMLFile() {
+        // Create a mock YAML config file
+        String yamlConfig = """
+                projectName: MyProject
+                packageName: my.project
+                codelets:
+                  - name: TestCodelet
+                    group: test
+                    in: [MemOne]
+                    out: [MemTwo]
+                    broadcast: [MemThree]
+                memories:
+                  - content: null
+                    group: test
+                    name: MemOne
+                    type: object
+                  - content: null
+                    group: test
+                    name: MemTwo
+                    type: container
+                  - content: null
+                    group: test
+                    name: MemThree
+                    type: object""";
+
+        File configFile = new File(tempDir.toString(), "test_config.yaml");
+        try {
+            FileWriter writer = new FileWriter(configFile);
+            writer.write(yamlConfig);
+            writer.close();
+        } catch (IOException e) {
+            fail("Failed to create mock config file");
+        }
+        return configFile;
     }
 
     @Test
@@ -324,6 +329,126 @@ public class CSTInitTest {
         assertEquals(0, exitCode);
         String modifiedFile = readFileFromTmpDir("src/main/java/testProject/Main.java");
         assertNotEquals(mockText, modifiedFile);
+    }
+
+    @Test
+    public void testOverwriteOverAgentMind() throws IOException {
+        File configFile = createMockYAMLFile();
+        exitCode = new CommandLine(new Main()).execute("init", "--file", configFile.toString());
+        assertEquals(0, exitCode);
+
+
+        // Create a new mock YAML config file
+        String yamlConfig = """
+                projectName: MyProject
+                packageName: my.project
+                codelets:
+                  - name: TestCodelet
+                    group: test
+                    in: [MemOne]
+                    out: [MemTwo]
+                    broadcast: [MemThree]
+                  - name: NewCodelet
+                    group: newGroup
+                    in: [MemFour]
+                    out: [MemTwo]
+                    broadcast: [MemThree]
+                memories:
+                  - content: null
+                    group: test
+                    name: MemOne
+                    type: object
+                  - content: null
+                    group: test
+                    name: MemTwo
+                    type: container
+                  - content: null
+                    group: test
+                    name: MemFour
+                    type: object
+                  - content: null
+                    group: test
+                    name: MemThree
+                    type: object""";
+
+        File newConfigFile = new File(tempDir.toString(), "new_config.yaml");
+        try {
+            FileWriter writer = new FileWriter(newConfigFile);
+            writer.write(yamlConfig);
+            writer.close();
+        } catch (IOException e) {
+            fail("Failed to create mock config file");
+        }
+
+        exitCode = new CommandLine(new Main()).execute("init", "--overwrite", "--file", newConfigFile.toString());
+        assertEquals(0, exitCode);
+
+        String expectedAgentMind = """
+                package my.project;
+                
+                import my.project.codelets.test.TestCodelet;
+                import my.project.codelets.newgroup.NewCodelet;
+                import br.unicamp.cst.core.entities.Codelet;
+                import br.unicamp.cst.core.entities.Memory;
+                import br.unicamp.cst.core.entities.Mind;
+                
+                public class AgentMind extends Mind {
+                
+                    AgentMind() {
+                        super();
+                      \s
+                        // Codelets Groups Declaration
+                        createCodeletGroup("test");
+                        createCodeletGroup("newGroup");
+                      \s
+                        // Memory Groups Declaration
+                        createMemoryGroup("test");
+                      \s
+                        Memory memOne;
+                        Memory memTwo;
+                        Memory memFour;
+                        Memory memThree;
+                      \s
+                        memOne = createMemoryObject("MemOne");
+                        registerMemory(memOne, "test");
+                        memTwo = createMemoryContainer("MemTwo");
+                        registerMemory(memTwo, "test");
+                        memFour = createMemoryObject("MemFour");
+                        registerMemory(memFour, "test");
+                        memThree = createMemoryObject("MemThree");
+                        registerMemory(memThree, "test");
+                      \s
+                        Codelet testCodelet = new TestCodelet();
+                        testCodelet.addInput(memOne);
+                        testCodelet.addOutput(memTwo);
+                        testCodelet.addBroadcast(memThree);
+                        insertCodelet(testCodelet);
+                        registerCodelet(testCodelet, "test");
+                      \s
+                        Codelet newCodelet = new NewCodelet();
+                        newCodelet.addInput(memFour);
+                        newCodelet.addOutput(memTwo);
+                        newCodelet.addBroadcast(memThree);
+                        insertCodelet(newCodelet);
+                        registerCodelet(newCodelet, "newGroup");
+                      \s
+                        for (Codelet c : this.getCodeRack().getAllCodelets()) {
+                            c.setTimeStep(200);
+                        }
+                        start();
+                    }
+                }""";
+
+        assertEquals(expectedAgentMind, readFileFromTmpDir("src/main/java/my/project/AgentMind.java"));
+
+        List<String> expectedPaths = Arrays.asList(
+                "/src/main/java/my/project/Main.java",
+                "/src/main/java/my/project/AgentMind.java",
+                "/src/main/java/my/project/codelets",
+                "/src/main/java/my/project/codelets/test/TestCodelet.java",
+                "/src/main/java/my/project/codelets/newgroup/NewCodelet.java"
+        );
+        assertPathsExists(expectedPaths);
     }
 
 }

@@ -260,28 +260,12 @@ public class CSTInit implements Callable<Integer> {
 
         File path = new File(rootFolder + "/src/main/java/" + packageName.replace(".", "/"));
         path.mkdirs();
-        String agentMindCode = agentConfig.generateCode();
         if (!overwrite && currAgentConfig.getPackageName() != null)
-            agentMindCode = mergeCode(agentMindCode, currAgentConfig.generateCode());
+            agentConfig = currAgentConfig.mergeWith(agentConfig);
+        String agentMindCode = agentConfig.generateCode();
         FileWriter writer = new FileWriter(path + "/AgentMind.java");
         writer.write(agentMindCode);
         writer.close();
-    }
-
-    private static String mergeCode(String newCode, String currCode) {
-        int lastFoundLineIdx = 0;
-        List<String> currCodeSplit = new ArrayList<>(List.of(currCode.split("\n")));
-        for (String line : newCode.split("\n")) {
-            if (!line.isBlank()) {
-                int idx = currCodeSplit.indexOf(line);
-                if (idx != -1) {
-                    lastFoundLineIdx = idx;
-                } else {
-                    currCodeSplit.add(++lastFoundLineIdx, line);
-                }
-            }
-        }
-        return String.join("\n", currCodeSplit);
     }
 
     private void getAgentConfig() throws IOException {

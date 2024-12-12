@@ -174,12 +174,12 @@ public class AgentConfig {
                 constructorBody.addStatement(inExpr);
             }
             for (String outMemory : codelet.getOut()) {
-                MethodCallExpr outExpr = new MethodCallExpr(new NameExpr(codeletVarName), "addInput");
+                MethodCallExpr outExpr = new MethodCallExpr(new NameExpr(codeletVarName), "addOutput");
                 outExpr.addArgument(new NameExpr(getVarName(outMemory)));
                 constructorBody.addStatement(outExpr);
             }
             for (String broadcastMemory : codelet.getBroadcast()) {
-                MethodCallExpr broadcastExpr = new MethodCallExpr(new NameExpr(codeletVarName), "addInput");
+                MethodCallExpr broadcastExpr = new MethodCallExpr(new NameExpr(codeletVarName), "addBroadcast");
                 broadcastExpr.addArgument(new NameExpr(getVarName(broadcastMemory)));
                 constructorBody.addStatement(broadcastExpr);
             }
@@ -223,7 +223,8 @@ public class AgentConfig {
     @Override
     public String toString() {
         return "AgentConfig{" +
-                "projectName='" + projectName + '\'' +
+                "projectName='" + projectName + "'" +
+                "packageName='" + packageName + "'" +
                 ", codelets=" + codelets +
                 ", memories=" + memories +
                 '}';
@@ -284,7 +285,7 @@ public class AgentConfig {
     }
 
     public MemoryConfig findMemoryOrCreate(String nameAsString) {
-        Optional<MemoryConfig> memoryConfig = this.memories.stream().filter(m -> m.getName().equals(nameAsString)).findFirst();
+        Optional<MemoryConfig> memoryConfig = this.memories.stream().filter(m -> m.getName().equalsIgnoreCase(nameAsString)).findFirst();
         if (memoryConfig.isPresent()) {
             return memoryConfig.get();
         } else {
@@ -295,11 +296,11 @@ public class AgentConfig {
     }
 
     public Optional<MemoryConfig> findMemory(String memoryName) {
-        return this.memories.stream().filter(m -> m.getName().equals(memoryName)).findFirst();
+        return this.memories.stream().filter(m -> m.getName().equalsIgnoreCase(memoryName)).findFirst();
     }
 
     public CodeletConfig findCodeletOrCreate(String codeletName) {
-        Optional<CodeletConfig> codeletConfig = this.codelets.stream().filter(m -> m.getName().equals(codeletName)).findFirst();
+        Optional<CodeletConfig> codeletConfig = this.codelets.stream().filter(m -> m.getName().equalsIgnoreCase(codeletName)).findFirst();
         if (codeletConfig.isPresent()) {
             return codeletConfig.get();
         } else {
@@ -311,5 +312,22 @@ public class AgentConfig {
 
     public Optional<CodeletConfig> findCodelet(String codeletName) {
         return this.codelets.stream().filter(c -> c.getName().equalsIgnoreCase(codeletName)).findFirst();
+    }
+
+    public AgentConfig mergeWith(AgentConfig otherAgentConfig){
+        for (CodeletConfig codeletConfig : otherAgentConfig.codelets){
+            Optional<CodeletConfig> optCodelet = findCodelet(codeletConfig.getName());
+            if (!optCodelet.isPresent()){
+                this.codelets.add(codeletConfig);
+            }
+        }
+
+        for (MemoryConfig memoryConfig : otherAgentConfig.memories){
+            Optional<MemoryConfig> optMemory = findMemory(memoryConfig.getName());
+            if (!optMemory.isPresent()){
+                this.memories.add(memoryConfig);
+            }
+        }
+        return this;
     }
 }
