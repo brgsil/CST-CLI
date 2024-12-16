@@ -1,6 +1,7 @@
 package br.unicamp.cst.cli;
 
 import br.unicamp.cst.cli.commands.CSTInit;
+import br.unicamp.cst.cli.commands.CSTRun;
 import br.unicamp.cst.cli.commands.CSTSave;
 import br.unicamp.cst.cli.commands.CSTAdd;
 import picocli.CommandLine.Command;
@@ -14,6 +15,7 @@ import picocli.CommandLine;
             CSTInit.class,
             CSTSave.class,
             CSTAdd.class,
+            CSTRun.class,
         })
 public class Main implements Runnable {
     @CommandLine.Spec

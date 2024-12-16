@@ -26,6 +26,14 @@ public class ConfigParser {
         // Get root dir. Traverse up if necessary, until find folder src/
         File currDir = new File(System.getProperty("user.dir"));
 
+        File srcFolder = new File(currDir.getAbsolutePath() + "/src");
+        while (currDir != null && !srcFolder.exists()) {
+            srcFolder = new File(currDir.getAbsolutePath() + "/src");
+            currDir = currDir.getParentFile();
+        }
+
+        if (!srcFolder.exists()) return new AgentConfig();
+
         //Read settings.gradle file to collect project name for agent config
         File gradleSettings = new File(currDir.getAbsolutePath() + "/settings.gradle");
         String projectName = null;
@@ -40,9 +48,6 @@ public class ConfigParser {
             }
         }
 
-        File srcFolder = new File(currDir.getAbsolutePath() + "/src");
-
-        if (!srcFolder.exists()) return new AgentConfig();
 
         //Traverse folders and get packageName
         //Find AgentMind file

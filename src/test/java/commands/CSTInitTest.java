@@ -296,6 +296,7 @@ public class CSTInitTest {
     @Test
     public void testCSTVersionOption() throws IOException {
         initBasicTestProject("--cst-version", "1.4.0");
+        originalOut.println(out.toString());
         assertEquals(0, exitCode);
 
         List<String> expectedPaths = Arrays.asList(
@@ -449,6 +450,47 @@ public class CSTInitTest {
                 "/src/main/java/my/project/codelets/newgroup/NewCodelet.java"
         );
         assertPathsExists(expectedPaths);
+    }
+
+    @Test
+    public void testMemoryTypesInYAMLFile(){
+        // Create a mock YAML config file
+        String yamlConfig = """
+                projectName: MyProject
+                packageName: my.project
+                codelets:
+                  - name: TestCodelet
+                    group: test
+                    in: [MemOne]
+                    out: [MemTwo]
+                    broadcast: [MemThree]
+                memories:
+                  - content: null
+                    group: test
+                    name: MemOne
+                    type: invalid
+                  - content: null
+                    group: test
+                    name: MemTwo
+                    type: container
+                  - content: null
+                    group: test
+                    name: MemThree
+                    type: object""";
+
+        File configFile = new File(tempDir.toString(), "test_config.yaml");
+        try {
+            FileWriter writer = new FileWriter(configFile);
+            writer.write(yamlConfig);
+            writer.close();
+        } catch (IOException e) {
+            fail("Failed to create mock config file");
+        }
+
+        exitCode = new CommandLine(new Main()).execute("init", "--overwrite", "--file", configFile.toString());
+        assertNotEquals(0, exitCode);
+
+        originalOut.println(out.toString());
     }
 
 }
