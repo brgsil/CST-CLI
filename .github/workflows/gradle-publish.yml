@@ -35,7 +35,7 @@ jobs:
         gradle-version: "8.5"
 
     - name: Build with Gradle
-      run: ./gradlew test --stacktrace
+      run: sudo ./gradlew test --stacktrace
   
   build:
     needs: test
