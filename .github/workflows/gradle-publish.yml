@@ -59,7 +59,7 @@ jobs:
         gradle-version: "8.5"
 
     - name: Build with Gradle
-      run: ./gradle build --warning-mode=all --stacktrace
+      run: ./gradlew build --warning-mode=all --stacktrace
 
     - name: Package executables
       run: ./package.sh
