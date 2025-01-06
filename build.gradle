@@ -4,6 +4,7 @@ plugins {
     id 'jacoco'
     id 'org.beryx.jlink' version '3.0.1'
     id 'org.openjfx.javafxplugin' version '0.0.10'
+    id("org.javamodularity.moduleplugin") version "1.8.15"
 }
 
 group = 'br.unicamp.cst.cli'
@@ -20,7 +21,7 @@ dependencies {
     implementation 'info.picocli:picocli:4.7.6'
     annotationProcessor 'info.picocli:picocli-codegen:4.7.6'
     implementation 'org.yaml:snakeyaml:2.3'
-    implementation 'com.github.javaparser:javaparser-core:3.26.2'
+    implementation 'com.github.javaparser:javaparser-core:3.26.3'
 }
 
 compileJava {
