@@ -36,4 +36,4 @@ jobs:
         gradle-version: "8.5"
 
     - name: Build with Gradle
-      run: ./gradlew build
+      run: ./gradlew build --stacktrace --scan
