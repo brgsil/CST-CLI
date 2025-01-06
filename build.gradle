@@ -3,6 +3,7 @@ plugins {
     id 'application'
     id 'org.beryx.jlink' version '3.0.1'
     id 'org.openjfx.javafxplugin' version '0.0.10'
+    id("org.javamodularity.moduleplugin") version "1.8.15"
 }
 
 group = 'br.unicamp.cst.cli'
@@ -28,6 +29,9 @@ compileJava {
 
 test {
     useJUnitPlatform()
+    testLogging {
+        events "PASSED", "SKIPPED", "FAILED", "STANDARD_ERROR"
+    }
 }
 
 application {
