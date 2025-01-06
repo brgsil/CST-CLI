@@ -28,7 +28,7 @@ import java.util.Scanner;
 import java.util.concurrent.Callable;
 import java.util.stream.Collectors;
 
-@Command(name = "init", description = "Initialize a new CST project")
+@Command(name = "init", description = "Initialize a new CST project", mixinStandardHelpOptions = true)
 public class CSTInit implements Callable<Integer> {
     public static String TAB = "    ";
 
@@ -102,9 +102,8 @@ public class CSTInit implements Callable<Integer> {
                     ans = inputName;
                 overwrite = ans.equals("1");
             }
-        } else {
-            overwrite = true;
         }
+        overwrite = true;
     }
 
     private void getRequiredParams() {

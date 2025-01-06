@@ -108,7 +108,7 @@ public class ConfigParser {
                 MemoryConfig memoryConfig = agentConfig.findMemoryOrCreate(vd.getNameAsString());
                 memoryConfig.setType(MemoryConfig.OBJECT_TYPE);
             } else if (vd.getTypeAsString().equals(MEMORY_CONTAINER_TYPE)) {
-                System.out.println(vd.toString());
+                //System.out.println(vd.toString());
                 MemoryConfig memoryConfig = agentConfig.findMemoryOrCreate(vd.getNameAsString());
                 memoryConfig.setType(MemoryConfig.CONTAINER_TYPE);
             } else if (vd.getTypeAsString().equals(MEMORY_BASE_TYPE)) {
