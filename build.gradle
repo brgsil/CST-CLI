@@ -31,7 +31,7 @@ compileJava {
 test {
     useJUnitPlatform()
     testLogging {
-        events "PASSED", "SKIPPED", "STANDARD_ERROR", "STANDARD_OUTPUT"
+        events "PASSED", "SKIPPED", "STANDARD_ERROR", "STANDARD_OUT"
     }
 }
 
