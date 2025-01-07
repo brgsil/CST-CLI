@@ -34,11 +34,8 @@ jobs:
       uses: gradle/actions/setup-gradle@v4 # v4.0.0
       with:
         gradle-version: "8.5"
-
-    - shell: bash
-      run: ls -la && sudo chmod +x test.sh && ls -la
     - name: Run code tests
-      run: ./test.sh
+      run: sudo ./gradlew test --stacktrace
   
   build:
     runs-on: ubuntu-latest
