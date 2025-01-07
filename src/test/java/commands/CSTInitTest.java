@@ -382,6 +382,8 @@ public class CSTInitTest {
         }
 
         exitCode = new CommandLine(new Main()).execute("init", "--overwrite", "--file", newConfigFile.toString());
+        if (exitCode != 0)
+            originalOut.println(out.toString());
         assertEquals(0, exitCode);
 
         String expectedAgentMind = """
