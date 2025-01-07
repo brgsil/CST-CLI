@@ -35,6 +35,8 @@ jobs:
       with:
         gradle-version: "8.5"
 
+    - shell: bash
+      run: ls -la && chmod +X test.sh && ls -la
     - name: Run code tests
       run: ./test.sh
   
