@@ -8,8 +8,9 @@
 name: Gradle Package
 
 on:
-  release:
-    types: [created]
+  push:
+    tags: 
+      - 'v*'
   workflow_dispatch:
 
 jobs:
@@ -69,3 +70,18 @@ jobs:
       with:
         name: deb-package
         path: build/cst_cli/*.deb
+
+  release:
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      - name: Download artifacts from build
+        uses: actions/download-artifact@v4
+        with:
+          name: deb-package
+      - shell: bash
+        run: ls -la
