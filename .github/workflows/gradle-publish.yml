@@ -68,8 +68,10 @@ jobs:
     - name: Upload Packages
       uses: actions/upload-artifact@v4
       with:
-        name: deb-package
-        path: build/cst_cli/*.deb
+        name: linux-package
+        path: |
+          build/cst_cli/*.deb
+          build/cst_cli/*.rpm
 
   release:
     needs: build
@@ -82,7 +84,7 @@ jobs:
       - name: Download artifacts from build
         uses: actions/download-artifact@v4
         with:
-          name: deb-package
+          name: linux-package
       - name: Release
         uses: softprops/action-gh-release@v2
         with:
